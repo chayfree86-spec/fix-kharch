@@ -13,6 +13,8 @@ import {
   Trash2,
   Eye,
   EyeOff,
+  RefreshCw,
+  LogOut,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { CurrencyInput } from '../components/ui/CurrencyInput';
@@ -21,6 +23,7 @@ import { Modal } from '../components/ui/Modal';
 import { Logo } from '../components/ui/Logo';
 import { ExpenseCategory } from '../types';
 import { AVAILABLE_ICONS, getCategoryIconComponent } from '../utils/categoryIcons';
+import { clearAllAppCacheAndReload } from '../utils/autoUpdater';
 
 export const SettingsScreen: React.FC = () => {
   const {
@@ -35,10 +38,15 @@ export const SettingsScreen: React.FC = () => {
     deleteCategory,
     toggleCategory,
     summary,
+    user,
+    logout,
   } = useApp();
 
   const [cafeName, setCafeName] = useState(settings.cafeName);
   const [budget, setBudget] = useState<number>(selectedMonthData.budget);
+  const [businessId, setBusinessId] = useState<string>(
+    settings.staffBusinessId != null ? String(settings.staffBusinessId) : ''
+  );
   const [isSaved, setIsSaved] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
@@ -54,15 +62,26 @@ export const SettingsScreen: React.FC = () => {
   const [deletingCatId, setDeletingCatId] = useState<string | null>(null);
   const [deletingCatName, setDeletingCatName] = useState('');
 
+  // Keep the form in sync with data that loads asynchronously from the server.
+  React.useEffect(() => {
+    setCafeName(settings.cafeName);
+    setBusinessId(settings.staffBusinessId != null ? String(settings.staffBusinessId) : '');
+  }, [settings.cafeName, settings.staffBusinessId]);
+
+  React.useEffect(() => {
+    setBudget(selectedMonthData.budget);
+  }, [selectedMonthData.budget, selectedMonthData.monthKey]);
+
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     if (cafeName.trim()) {
       updateSettings({ cafeName: cafeName.trim() });
     }
-    if (budget > 0) {
-      updateBudget(budget);
-      updateSettings({ defaultMonthlyBudget: budget });
-    }
+    updateBudget(budget);
+    updateSettings({
+      defaultMonthlyBudget: budget,
+      staffBusinessId: businessId.trim() === '' ? null : Number(businessId.trim()),
+    });
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2500);
   };
@@ -70,8 +89,6 @@ export const SettingsScreen: React.FC = () => {
   const handleReset = () => {
     resetToDefaults();
     setIsResetConfirmOpen(false);
-    setCafeName('Fix Spend Café');
-    setBudget(312000);
   };
 
   const handleOpenAddCategory = () => {
@@ -316,6 +333,23 @@ export const SettingsScreen: React.FC = () => {
               helperText={`Current target budget for ${selectedMonthData.monthName}`}
             />
 
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-coffee">
+                Staff-app Business ID
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={businessId}
+                onChange={e => setBusinessId(e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder="e.g. 1 — links your staff roster"
+                className="w-full h-12 px-4 bg-cream border border-border-warm rounded-btn text-base font-semibold text-coffee-dark placeholder:text-coffee/35 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-coffee/20 focus:border-coffee transition-all shadow-sm"
+              />
+              <p className="text-[11px] text-caramel">
+                Pulls staff & fixed salaries from the Staff-app attendance system.
+              </p>
+            </div>
+
             <div className="pt-2 flex items-center justify-between gap-3">
               {isSaved ? (
                 <span className="text-xs font-semibold text-coffee flex items-center gap-1.5 animate-fade-in bg-warm-beige/60 px-3 py-1.5 rounded-btn">
@@ -393,10 +427,27 @@ export const SettingsScreen: React.FC = () => {
               </div>
             </div>
 
+            {/* Clear Browser Cache & Fresh Reload */}
             <div className="pt-2 border-t border-border-warm/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <span className="text-xs font-bold text-coffee block">Reset Application Data</span>
-                <span className="text-[11px] text-caramel block">Restore initial café mock dataset</span>
+                <span className="text-xs font-bold text-coffee block">Auto Cache Purge & Force Refresh</span>
+                <span className="text-[11px] text-caramel block">Clear browser cache & reload fresh code</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => clearAllAppCacheAndReload()}
+                className="px-3.5 py-2 rounded-btn bg-coffee hover:bg-coffee-dark text-cream text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm self-start sm:self-auto active:scale-[0.98]"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Clear Cache & Reload</span>
+              </button>
+            </div>
+
+            {/* Reload / Reset Application Data */}
+            <div className="pt-2 border-t border-border-warm/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-bold text-coffee block">Reload Data from Server</span>
+                <span className="text-[11px] text-caramel block">Discard local changes & refetch everything</span>
               </div>
               <button
                 type="button"
@@ -404,7 +455,27 @@ export const SettingsScreen: React.FC = () => {
                 className="px-3.5 py-2 rounded-btn bg-warm-beige hover:bg-expense-red-50 text-expense-red text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-border-warm self-start sm:self-auto"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reset Data</span>
+                <span>Reload Data</span>
+              </button>
+            </div>
+
+            {/* Account / Logout */}
+            <div className="pt-2 border-t border-border-warm/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-bold text-coffee block">
+                  {user ? `Signed in as ${user.name}` : 'Account'}
+                </span>
+                <span className="text-[11px] text-caramel block">
+                  {user?.email || user?.mobile || 'End your session on this device'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => logout()}
+                className="px-3.5 py-2 rounded-btn bg-coffee hover:bg-coffee-dark text-cream text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors self-start sm:self-auto active:scale-[0.98]"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Logout</span>
               </button>
             </div>
           </div>
@@ -517,9 +588,9 @@ export const SettingsScreen: React.FC = () => {
         isOpen={isResetConfirmOpen}
         onClose={() => setIsResetConfirmOpen(false)}
         onConfirm={handleReset}
-        title="Reset All Expense Data?"
-        message="This will reset all staff, EMI, shop, other and custom expense records back to default."
-        confirmText="Reset to Defaults"
+        title="Reload Data from Server?"
+        message="This discards any unsaved local changes and reloads your settings, categories and current month fresh from the server."
+        confirmText="Reload Data"
       />
     </div>
   );

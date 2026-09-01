@@ -57,6 +57,13 @@ export const GlobalQuickActionModal: React.FC = () => {
           nameLabel: 'Expense Name',
           namePlaceholder: 'e.g. Packaging, Coffee beans',
         };
+      default:
+        return {
+          title: 'Add Expense',
+          subtitle: 'Enter expense details',
+          nameLabel: 'Name',
+          namePlaceholder: 'e.g. Expense name',
+        };
     }
   };
 

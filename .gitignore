@@ -73,7 +73,8 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variable files
-.env
+# NOTE: .env is intentionally committed so the backend config (api/.env)
+# deploys to the server via git. Keep secrets in mind — repo must stay private.
 .env.development.local
 .env.test.local
 .env.production.local
@@ -89,7 +90,7 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
+# NOTE: dist is intentionally committed so the built app deploys via git.
 
 # Gatsby files
 .cache/

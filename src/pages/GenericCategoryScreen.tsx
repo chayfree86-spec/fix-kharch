@@ -15,7 +15,7 @@ interface GenericCategoryScreenProps {
 }
 
 export const GenericCategoryScreen: React.FC<GenericCategoryScreenProps> = ({ category }) => {
-  const { selectedMonthData, addCustomExpense, updateCustomExpense, deleteCustomExpense, summary } = useApp();
+  const { selectedMonthData, addCustomExpense, updateCustomExpense, deleteCustomExpense } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);

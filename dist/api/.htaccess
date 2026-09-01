@@ -1,0 +1,7 @@
+# Protect sensitive files in the API directory.
+<FilesMatch "(^\.env|\.env\.example|\.sql)$">
+    Require all denied
+</FilesMatch>
+
+# Block direct web access to the session store.
+RedirectMatch 403 ^/.*/\.sessions/.*$

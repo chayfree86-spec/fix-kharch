@@ -1,4 +1,4 @@
-import React from 'react';
+import { LucideIcon } from 'lucide-react';
 import {
   UsersRound,
   Landmark,
@@ -46,7 +46,7 @@ export const AVAILABLE_ICONS = [
   { id: 'layers', label: 'Other Overhead', icon: Layers },
 ];
 
-export function getCategoryIconComponent(iconName: string): React.FC<{ className?: string }> {
+export function getCategoryIconComponent(iconName: string): LucideIcon {
   const match = AVAILABLE_ICONS.find(i => i.id === iconName);
   if (match) return match.icon;
 

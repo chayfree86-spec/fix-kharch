@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Plus,
   ArrowRight,
   TrendingDown,
   WalletCards,
@@ -154,7 +153,9 @@ export const Dashboard: React.FC = () => {
               <button
                 key={cat.id}
                 onClick={() => {
-                  if (['staff', 'emi', 'shop', 'other'].includes(cat.id)) {
+                  // Staff come from the Staff-app, so open that screen instead
+                  // of a quick-add form (only the amount is editable there).
+                  if (['emi', 'shop', 'other'].includes(cat.id)) {
                     setQuickActionType(cat.id);
                   } else {
                     setCurrentTab(cat.id);

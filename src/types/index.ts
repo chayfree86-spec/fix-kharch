@@ -56,6 +56,7 @@ export interface CafeSettings {
   tagline: string;
   defaultMonthlyBudget: number;
   currencySymbol: string;
+  staffBusinessId?: number | null; // Linked Staff-app business (source of staff)
 }
 
 export type TabType = string; // Supports 'dashboard' | 'reports' | 'settings' and any category.id

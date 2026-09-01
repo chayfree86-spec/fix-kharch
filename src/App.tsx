@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { AppLayout } from './components/layout/AppLayout';
 import { SplashScreen } from './components/ui/SplashScreen';
+import { AuthScreen } from './components/auth/AuthScreen';
 import { Dashboard } from './pages/Dashboard';
 import { StaffScreen } from './pages/StaffScreen';
 import { EMIScreen } from './pages/EMIScreen';
@@ -56,13 +57,31 @@ const MainContent: React.FC = () => {
   );
 };
 
-export const App: React.FC = () => {
+const Root: React.FC = () => {
+  const { authStatus } = useApp();
   const [showSplash, setShowSplash] = useState(true);
 
+  // While the session check runs, keep the splash on screen.
+  if (authStatus === 'loading') {
+    return <SplashScreen onFinish={() => {}} />;
+  }
+
+  if (authStatus === 'unauthenticated') {
+    return <AuthScreen />;
+  }
+
   return (
-    <AppProvider>
+    <>
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       <MainContent />
+    </>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <AppProvider>
+      <Root />
     </AppProvider>
   );
 };
