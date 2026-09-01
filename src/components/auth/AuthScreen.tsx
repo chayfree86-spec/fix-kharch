@@ -3,13 +3,33 @@ import { Coffee, LogIn, Loader2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Logo } from '../ui/Logo';
 
+// Remember the last successful login so the form prefills next time.
+const SAVED_ID_KEY = 'fix_spend_login_id';
+const SAVED_SECRET_KEY = 'fix_spend_login_sec';
+
+const encode = (v: string) => {
+  try {
+    return btoa(unescape(encodeURIComponent(v)));
+  } catch {
+    return '';
+  }
+};
+const decode = (v: string | null) => {
+  if (!v) return '';
+  try {
+    return decodeURIComponent(escape(atob(v)));
+  } catch {
+    return '';
+  }
+};
+
 export const AuthScreen: React.FC = () => {
   const { login } = useApp();
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
+  const [identifier, setIdentifier] = useState(() => localStorage.getItem(SAVED_ID_KEY) || '');
+  const [password, setPassword] = useState(() => decode(localStorage.getItem(SAVED_SECRET_KEY)));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,6 +37,9 @@ export const AuthScreen: React.FC = () => {
     setSubmitting(true);
     try {
       await login(identifier.trim(), password);
+      // Remember for next time (prefilled login).
+      localStorage.setItem(SAVED_ID_KEY, identifier.trim());
+      localStorage.setItem(SAVED_SECRET_KEY, encode(password));
     } catch (err: any) {
       setError(err?.message || 'Something went wrong. Please try again.');
     } finally {
