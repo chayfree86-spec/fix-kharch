@@ -3,6 +3,7 @@ import { AppProvider, useApp } from './context/AppContext';
 import { AppLayout } from './components/layout/AppLayout';
 import { SplashScreen } from './components/ui/SplashScreen';
 import { AuthScreen } from './components/auth/AuthScreen';
+import { PWAInstallPrompt } from './components/pwa/PWAInstallPrompt';
 import { Dashboard } from './pages/Dashboard';
 import { StaffScreen } from './pages/StaffScreen';
 import { EMIScreen } from './pages/EMIScreen';
@@ -82,6 +83,7 @@ export const App: React.FC = () => {
   return (
     <AppProvider>
       <Root />
+      <PWAInstallPrompt />
     </AppProvider>
   );
 };
