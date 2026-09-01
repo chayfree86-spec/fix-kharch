@@ -73,8 +73,7 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variable files
-# NOTE: .env is intentionally committed so the backend config (api/.env)
-# deploys to the server via git. Keep secrets in mind — repo must stay private.
+.env
 .env.development.local
 .env.test.local
 .env.production.local
