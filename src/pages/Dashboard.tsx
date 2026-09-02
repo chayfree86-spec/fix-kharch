@@ -49,9 +49,9 @@ export const Dashboard: React.FC = () => {
     .filter(item => item.value > 0);
 
   return (
-    <div className="space-y-5 animate-fade-in pb-4">
+    <div className="flex flex-col gap-5 animate-fade-in pb-4">
       {/* 1. PRIMARY FINANCIAL SUMMARY CARDS (Top priority: Budget, Expense, Balance) */}
-      <section aria-label="Financial Summary" className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+      <section aria-label="Financial Summary" className="order-2 md:order-1 grid grid-cols-2 sm:grid-cols-3 gap-3">
         {/* CARD 1: Total Budget (Coffee Brown dominant) */}
         <div className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm flex flex-col justify-between relative overflow-hidden">
           <div className="flex items-center justify-between">
@@ -93,9 +93,9 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* CARD 3: Balance (Calculated: Budget - Expense) */}
+        {/* CARD 3: Balance — full width on the second mobile row, normal 3rd column on desktop */}
         <div
-          className={`rounded-card p-4 sm:p-5 border shadow-warm-sm flex flex-col justify-between relative overflow-hidden ${
+          className={`col-span-2 sm:col-span-1 rounded-card p-4 sm:p-5 border shadow-warm-sm flex flex-col justify-between relative overflow-hidden ${
             summary.isDeficit
               ? 'bg-cream border-expense-red/40 from-cream to-expense-red-50/60'
               : 'bg-cream border-border-warm'
@@ -139,8 +139,9 @@ export const Dashboard: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. QUICK ADD ACTIONS */}
-      <section aria-label="Quick Actions">
+      {/* 2. QUICK ADD ACTIONS — rarely used on mobile, so pushed to the bottom
+             there; keeps its normal near-top spot on desktop. */}
+      <section aria-label="Quick Actions" className="order-last md:order-2">
         <div className="flex items-center justify-between mb-2.5 px-1">
           <h3 className="text-xs font-bold text-caramel uppercase tracking-wider">
             Quick Add
@@ -173,16 +174,20 @@ export const Dashboard: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. EXPENSE BREAKDOWN CARDS */}
-      <section aria-label="Expense Breakdown">
-        <div className="flex items-center justify-between mb-2.5 px-1">
-          <h3 className="text-sm font-bold text-coffee tracking-tight">
-            Expense Breakdown
-          </h3>
+      {/* 3. EXPENSE BREAKDOWN CARDS — the primary section: shown first on mobile
+             so all categories are visible without scrolling. */}
+      <section aria-label="Expense Breakdown" className="order-1 md:order-3">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <div className="flex items-center gap-2">
+            <span className="w-1 h-4 rounded-full bg-expense-red" />
+            <h3 className="text-base sm:text-lg font-bold text-coffee tracking-tight">
+              Expense Breakdown
+            </h3>
+          </div>
           <span className="text-xs text-caramel font-medium">{enabledCategories.length} Categories</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5">
           {enabledCategories.map(cat => {
             const Icon = getCategoryIconComponent(cat.icon);
             let catAmount = 0;
@@ -215,32 +220,26 @@ export const Dashboard: React.FC = () => {
               <div
                 key={cat.id}
                 onClick={() => setCurrentTab(cat.id)}
-                className="bg-cream p-4 rounded-card border border-border-warm shadow-warm-sm hover:shadow-warm-md hover:border-caramel/40 transition-all cursor-pointer group flex flex-col justify-between"
+                className="bg-cream p-3.5 sm:p-4 rounded-card border border-border-warm shadow-warm-sm hover:shadow-warm-md hover:border-caramel/40 transition-all cursor-pointer group flex flex-col justify-between gap-2.5"
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-coffee text-cream flex items-center justify-center shadow-sm flex-shrink-0">
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="text-sm font-bold text-coffee group-hover:text-coffee-dark truncate">
-                        {cat.name}
-                      </h4>
-                      <span className="text-xs text-caramel font-medium">
-                        {catCount} records
-                      </span>
-                    </div>
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-coffee text-cream flex items-center justify-center shadow-sm flex-shrink-0">
+                    <Icon className="w-5 h-5" />
                   </div>
-
-                  <div className="flex items-center gap-1.5 text-caramel group-hover:text-coffee group-hover:translate-x-0.5 transition-all flex-shrink-0">
-                    <span className="text-xs font-semibold">{percentage}%</span>
-                    <ArrowRight className="w-4 h-4" />
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-sm font-bold text-coffee group-hover:text-coffee-dark truncate leading-tight">
+                      {cat.name}
+                    </h4>
+                    <span className="text-[11px] sm:text-xs text-caramel font-medium">
+                      {catCount} records
+                    </span>
                   </div>
+                  <ArrowRight className="hidden sm:block w-4 h-4 text-caramel group-hover:text-coffee group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                 </div>
 
-                <div className="flex items-end justify-between pt-2 border-t border-border-warm/60">
-                  <span className="text-xs text-caramel font-medium">Total:</span>
-                  <span className="text-lg font-bold text-expense-red">
+                <div className="flex items-end justify-between gap-1 pt-2.5 border-t border-border-warm/60">
+                  <span className="text-[11px] sm:text-xs text-caramel font-semibold">{percentage}%</span>
+                  <span className="text-lg font-bold text-expense-red leading-none break-words text-right">
                     {formatINR(catAmount)}
                   </span>
                 </div>
@@ -251,7 +250,7 @@ export const Dashboard: React.FC = () => {
       </section>
 
       {/* 4. EXPENSE DISTRIBUTION CHART & INSIGHT */}
-      <section aria-label="Visual Overview" className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm">
+      <section aria-label="Visual Overview" className="order-3 md:order-4 bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h4 className="text-sm font-bold text-coffee">Category Distribution</h4>

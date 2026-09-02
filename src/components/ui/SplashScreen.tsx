@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Loader } from './Loader';
 
 interface SplashScreenProps {
   onFinish: () => void;
@@ -33,11 +34,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
           />
         </div>
 
-        {/* Loading animated indicators */}
-        <div className="mt-6 flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-caramel animate-bounce" style={{ animationDelay: '0ms' }} />
-          <span className="w-2.5 h-2.5 rounded-full bg-coffee animate-bounce" style={{ animationDelay: '150ms' }} />
-          <span className="w-2.5 h-2.5 rounded-full bg-expense-red animate-bounce" style={{ animationDelay: '300ms' }} />
+        {/* Theme-matched loading spinner */}
+        <div className="mt-7">
+          <Loader size="md" />
         </div>
       </div>
     </div>

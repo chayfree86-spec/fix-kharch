@@ -85,7 +85,7 @@ export const ReportsScreen: React.FC = () => {
       </div>
 
       {/* 1. Monthly Financial Snapshot Summary Card */}
-      <div className="bg-cream rounded-card p-5 border border-border-warm shadow-warm-sm space-y-4">
+      <div className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm space-y-4">
         <div className="flex items-center justify-between border-b border-border-warm/60 pb-3">
           <div>
             <span className="text-xs font-bold text-caramel uppercase tracking-wider">
@@ -149,7 +149,7 @@ export const ReportsScreen: React.FC = () => {
       {/* 2. Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Category Share Donut Chart */}
-        <div className="bg-cream rounded-card p-5 border border-border-warm shadow-warm-sm space-y-3">
+        <div className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm space-y-3">
           <div className="flex items-center gap-2 border-b border-border-warm/60 pb-3">
             <PieIcon className="w-4 h-4 text-caramel" />
             <h4 className="text-sm font-bold text-coffee uppercase tracking-wider">
@@ -194,7 +194,7 @@ export const ReportsScreen: React.FC = () => {
         </div>
 
         {/* Category Comparison Bar Chart */}
-        <div className="bg-cream rounded-card p-5 border border-border-warm shadow-warm-sm space-y-3">
+        <div className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm space-y-3">
           <div className="flex items-center gap-2 border-b border-border-warm/60 pb-3">
             <BarChart3 className="w-4 h-4 text-caramel" />
             <h4 className="text-sm font-bold text-coffee uppercase tracking-wider">
@@ -238,13 +238,56 @@ export const ReportsScreen: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Detailed Category Breakdown Table */}
-      <div className="bg-cream rounded-card p-5 border border-border-warm shadow-warm-sm space-y-3">
+      {/* 3. Detailed Category Breakdown */}
+      <div className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm space-y-3">
         <h4 className="text-sm font-bold text-coffee uppercase tracking-wider border-b border-border-warm/60 pb-3">
-          Category Summary Table
+          Category Summary
         </h4>
 
-        <div className="overflow-x-auto">
+        {/* Mobile: card list (native-style rows instead of a wide table) */}
+        <div className="md:hidden space-y-2.5">
+          {categoryDistribution.map((cat, idx) => {
+            const Icon = getCategoryIconComponent(cat.iconName);
+            const pct =
+              summary.totalExpense > 0 ? ((cat.value / summary.totalExpense) * 100).toFixed(1) : '0.0';
+
+            let count = 0;
+            if (cat.id === 'staff') count = summary.staffCount;
+            else if (cat.id === 'emi') count = summary.emiCount;
+            else if (cat.id === 'shop') count = summary.shopCount;
+            else if (cat.id === 'other') count = summary.otherCount;
+            else count = (selectedMonthData.customExpenses?.[cat.id] || []).length;
+
+            return (
+              <div
+                key={idx}
+                className="flex items-center gap-3 p-3 rounded-btn bg-warm-beige/40 border border-border-warm/40"
+              >
+                <div className="relative flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-coffee text-cream flex items-center justify-center shadow-sm">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <span
+                    className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-cream"
+                    style={{ backgroundColor: cat.color }}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h5 className="text-sm font-bold text-coffee truncate">{cat.name}</h5>
+                  <span className="text-[11px] text-caramel font-medium">
+                    {count} items · {pct}% share
+                  </span>
+                </div>
+                <span className="text-base font-bold text-expense-red flex-shrink-0">
+                  {formatINR(cat.value)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop: full table (unchanged) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse text-sm">
             <thead>
               <tr className="border-b border-border-warm bg-warm-beige/50 text-xs font-bold text-coffee uppercase tracking-wider">

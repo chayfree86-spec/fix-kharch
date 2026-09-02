@@ -13,7 +13,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   return (
-    <div className="min-h-dvh bg-warm-beige flex flex-col md:flex-row text-coffee no-x-overflow">
+    <div className="min-h-dvh bg-warm-beige flex flex-col md:flex-row text-coffee">
       {/* Desktop Sidebar */}
       <Sidebar />
 

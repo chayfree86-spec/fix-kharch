@@ -3,6 +3,7 @@ import { AppProvider, useApp } from './context/AppContext';
 import { AppLayout } from './components/layout/AppLayout';
 import { SplashScreen } from './components/ui/SplashScreen';
 import { AuthScreen } from './components/auth/AuthScreen';
+import { FullScreenLoader } from './components/ui/Loader';
 import { PWAInstallPrompt } from './components/pwa/PWAInstallPrompt';
 import { Dashboard } from './pages/Dashboard';
 import { StaffScreen } from './pages/StaffScreen';
@@ -60,23 +61,26 @@ const MainContent: React.FC = () => {
 
 const Root: React.FC = () => {
   const { authStatus } = useApp();
-  const [showSplash, setShowSplash] = useState(true);
+  const [splashDone, setSplashDone] = useState(false);
 
-  // While the session check runs, keep the splash on screen.
-  if (authStatus === 'loading') {
-    return <SplashScreen onFinish={() => {}} />;
+  // 1. Branded splash first — always shown at startup, before anything else.
+  if (!splashDone) {
+    return <SplashScreen onFinish={() => setSplashDone(true)} />;
   }
 
+  // 2. Splash finished but the session check is still running (slow network) —
+  //    show a theme loader instead of a blank screen.
+  if (authStatus === 'loading') {
+    return <FullScreenLoader label="Getting things ready…" />;
+  }
+
+  // 3. Not logged in → login screen (appears AFTER the splash, not before it).
   if (authStatus === 'unauthenticated') {
     return <AuthScreen />;
   }
 
-  return (
-    <>
-      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
-      <MainContent />
-    </>
-  );
+  // 4. Logged in → the app. No second splash after login.
+  return <MainContent />;
 };
 
 export const App: React.FC = () => {

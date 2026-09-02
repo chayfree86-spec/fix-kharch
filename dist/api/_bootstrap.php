@@ -63,16 +63,12 @@ if (is_dir($sessionDir) && is_writable($sessionDir)) {
 }
 ini_set('session.gc_maxlifetime', (string) $sessionLifetime);
 
-// SameSite=None is required for the session cookie to be sent back on
-// cross-origin API calls (e.g. a local dev frontend calling the production
-// API). Browsers require Secure alongside None, so only use it over HTTPS —
-// plain-HTTP local backends keep the safer same-site Lax default.
 session_set_cookie_params([
     'lifetime' => $sessionLifetime,
     'path' => '/',
     'secure' => $cookieSecure,
     'httponly' => true,
-    'samesite' => $cookieSecure ? 'None' : 'Lax',
+    'samesite' => 'Lax',
 ]);
 
 if (session_status() !== PHP_SESSION_ACTIVE) {

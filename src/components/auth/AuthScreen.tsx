@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Coffee, LogIn, Loader2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { Logo } from '../ui/Logo';
 
 // Remember the last successful login so the form prefills next time.
 const SAVED_ID_KEY = 'fix_spend_login_id';
@@ -51,16 +50,19 @@ export const AuthScreen: React.FC = () => {
     'w-full h-12 px-4 bg-cream border border-border-warm rounded-btn text-base font-semibold text-coffee-dark placeholder:text-coffee/35 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-coffee/20 focus:border-coffee transition-all shadow-sm';
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-warm-beige">
+    <div className="min-h-dvh flex items-center justify-center p-4 bg-warm-beige">
       <div className="w-full max-w-md">
-        {/* Brand */}
-        <div className="flex flex-col items-center text-center mb-6">
-          <Logo size="lg" />
-          <h1 className="text-2xl font-bold text-coffee mt-3">Fix Spend</h1>
-          <p className="text-sm text-caramel">Manage Fixed Expenses. Grow Your Café.</p>
+        {/* Brand — same graphic as the splash screen */}
+        <div className="flex flex-col items-center text-center mb-5">
+          <img
+            src="/websplash-transparent.png"
+            alt="Fix Spend — Manage Fixed Expenses. Grow Your Café."
+            className="w-full max-w-[230px] sm:max-w-[260px] h-auto object-contain select-none"
+            loading="eager"
+          />
         </div>
 
-        <div className="bg-cream rounded-card border border-border-warm shadow-warm-sm p-6">
+        <div className="bg-cream rounded-card border border-border-warm shadow-warm-sm p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-5">
             <div className="w-9 h-9 rounded-btn bg-coffee text-cream flex items-center justify-center">
               <LogIn className="w-4 h-4" />
