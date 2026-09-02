@@ -176,7 +176,7 @@ function augment_staff_with_db_attendance(PDO $pdo, int $businessId, string $mon
         // 3. Transactions
         $stmtTx = $pdo->prepare(
             'SELECT staff_id,
-                    SUM(CASE WHEN kind = "advance" OR kind = "advance_returned" THEN amount ELSE 0 END) AS adv,
+                    SUM(CASE WHEN kind = "advance_given" THEN amount WHEN kind = "advance_returned" THEN -amount ELSE 0 END) AS adv,
                     SUM(CASE WHEN kind = "deduction" THEN amount ELSE 0 END) AS ded
              FROM staff_transactions
              WHERE business_id = ? AND transaction_date LIKE CONCAT(?, "%")
