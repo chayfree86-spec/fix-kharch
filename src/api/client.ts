@@ -102,6 +102,14 @@ export interface ApiStaffItem {
   name: string;
   fixAmount: number;
   amount: number;
+  mobile?: string | null;
+  perDaySalary?: number;
+  presentDays?: number;
+  absentDays?: number;
+  advance?: number;
+  deduction?: number;
+  earnedSalary?: number;
+  netPayable?: number;
 }
 
 export const api = {

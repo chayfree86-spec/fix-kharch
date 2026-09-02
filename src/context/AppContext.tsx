@@ -120,7 +120,20 @@ function assembleMonth(
     else (custom[it.category] ||= []).push(item);
   }
   month.customExpenses = custom;
-  month.staffList = staff.map(s => ({ id: s.id, name: s.name, amount: s.amount, fixAmount: s.fixAmount }));
+  month.staffList = staff.map(s => ({
+    id: s.id,
+    name: s.name,
+    amount: s.amount,
+    fixAmount: s.fixAmount,
+    mobile: s.mobile,
+    perDaySalary: s.perDaySalary,
+    presentDays: s.presentDays,
+    absentDays: s.absentDays,
+    advance: s.advance,
+    deduction: s.deduction,
+    earnedSalary: s.earnedSalary,
+    netPayable: s.netPayable,
+  }));
   return month;
 }
 

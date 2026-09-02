@@ -1,8 +1,16 @@
 export interface StaffItem {
   id: string;
   name: string;
-  amount: number;      // Actual amount counted towards Total Expense
-  fixAmount: number;   // Reference Fixed Salary amount (not counted in Total Expense)
+  amount: number;       // Actual amount counted towards Total Expense
+  fixAmount: number;    // Reference Fixed Salary amount (for Total Budget)
+  mobile?: string | null;
+  perDaySalary?: number;
+  presentDays?: number; // Attendance present/credited days this month
+  absentDays?: number;
+  advance?: number;     // Advance taken this month from Staff-app
+  deduction?: number;   // Deductions / penalties this month from Staff-app
+  earnedSalary?: number;
+  netPayable?: number;
 }
 
 export interface EMIItem {

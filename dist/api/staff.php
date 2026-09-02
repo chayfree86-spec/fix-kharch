@@ -26,7 +26,7 @@ if ($method === 'GET') {
     }
 
     try {
-        $remoteStaff = staffapp_fetch_staff($businessId);
+        $remoteStaff = staffapp_fetch_staff($businessId, $month);
     } catch (RuntimeException $e) {
         respond(['ok' => false, 'message' => $e->getMessage()], 502);
     }
@@ -42,11 +42,23 @@ if ($method === 'GET') {
     }
 
     $staff = array_map(static function (array $s) use ($saved): array {
+        $manualAmount = $saved[$s['id']] ?? null;
+        // If manually edited in fix-kharch, use that; otherwise default to netPayable from Staff-app!
+        $countedAmount = $manualAmount !== null ? (int) $manualAmount : (int) ($s['netPayable'] ?? 0);
+
         return [
             'id' => (string) $s['id'],           // Staff-app staff id
             'name' => $s['name'],
+            'mobile' => $s['mobile'] ?? null,
             'fixAmount' => (int) $s['monthlySalary'], // reference fixed salary
-            'amount' => $saved[$s['id']] ?? 0,        // manually filled actual
+            'perDaySalary' => (int) ($s['perDaySalary'] ?? 0),
+            'presentDays' => (float) ($s['presentDays'] ?? 0.0),
+            'absentDays' => (int) ($s['absentDays'] ?? 0),
+            'advance' => (int) ($s['advance'] ?? 0),
+            'deduction' => (int) ($s['deduction'] ?? 0),
+            'earnedSalary' => (int) ($s['earnedSalary'] ?? 0),
+            'netPayable' => (int) ($s['netPayable'] ?? 0),
+            'amount' => $countedAmount,        // actual counted towards expenses
         ];
     }, $remoteStaff);
 

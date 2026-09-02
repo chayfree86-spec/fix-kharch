@@ -1,5 +1,14 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { UsersRound, User, AlertTriangle, Info } from 'lucide-react';
+import {
+  UsersRound,
+  User,
+  AlertTriangle,
+  Info,
+  CalendarCheck,
+  CreditCard,
+  MinusCircle,
+  TrendingDown,
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { formatINR } from '../utils/currency';
 import { SearchInput } from '../components/ui/SearchInput';
@@ -32,6 +41,14 @@ export const StaffScreen: React.FC = () => {
   );
   const totalStaffFixAmount = useMemo(
     () => filteredStaff.reduce((sum, s) => sum + (Number(s.fixAmount) || 0), 0),
+    [filteredStaff]
+  );
+  const totalAdvances = useMemo(
+    () => filteredStaff.reduce((sum, s) => sum + (Number(s.advance) || 0), 0),
+    [filteredStaff]
+  );
+  const totalDeductions = useMemo(
+    () => filteredStaff.reduce((sum, s) => sum + (Number(s.deduction) || 0), 0),
     [filteredStaff]
   );
 
@@ -91,8 +108,8 @@ export const StaffScreen: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* Header Banner with Both Totals */}
-      <div className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* Header Summary Cards */}
+      <div className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-coffee text-cream flex items-center justify-center shadow-sm flex-shrink-0">
             <UsersRound className="w-6 h-6" />
@@ -100,30 +117,46 @@ export const StaffScreen: React.FC = () => {
           <div>
             <h2 className="text-xl font-bold text-coffee">Staff Kharch</h2>
             <p className="text-xs text-caramel">
-              {filteredStaff.length} staff from Staff-app · {selectedMonthData.monthName}
+              {filteredStaff.length} staff linked from Staff-app · {selectedMonthData.monthName}
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 self-start sm:self-auto">
-          <div className="bg-warm-beige/70 px-3.5 py-2 rounded-btn border border-border-warm/60 flex items-center gap-2">
-            <span className="text-xs font-semibold text-caramel uppercase tracking-wider">Fix Total:</span>
-            <span className="text-base sm:text-lg font-bold text-caramel">{formatINR(totalStaffFixAmount)}</span>
+        {/* Aggregate Metric Badges */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          <div className="bg-warm-beige/60 px-3 py-2 rounded-btn border border-border-warm/60 flex items-center gap-2">
+            <span className="text-[11px] font-semibold text-caramel uppercase tracking-wider">Fix Total:</span>
+            <span className="text-sm sm:text-base font-bold text-caramel">{formatINR(totalStaffFixAmount)}</span>
           </div>
-          <div className="bg-expense-red px-4 py-2 rounded-btn text-cream flex items-center gap-2 shadow-warm-sm">
-            <span className="text-xs font-semibold uppercase tracking-wider text-cream/90">Total Expense:</span>
-            <span className="text-lg sm:text-xl font-bold text-cream">{formatINR(totalStaffAmount)}</span>
+
+          {totalAdvances > 0 && (
+            <div className="bg-amber-500/10 px-3 py-2 rounded-btn border border-amber-500/20 flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
+              <CreditCard className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider">Adv:</span>
+              <span className="text-sm font-bold">-{formatINR(totalAdvances)}</span>
+            </div>
+          )}
+
+          {totalDeductions > 0 && (
+            <div className="bg-rose-500/10 px-3 py-2 rounded-btn border border-rose-500/20 flex items-center gap-1.5 text-rose-700 dark:text-rose-300">
+              <MinusCircle className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider">Ded:</span>
+              <span className="text-sm font-bold">-{formatINR(totalDeductions)}</span>
+            </div>
+          )}
+
+          <div className="bg-expense-red px-3.5 py-2 rounded-btn text-cream flex items-center gap-2 shadow-warm-sm">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-cream/90">Counted Total:</span>
+            <span className="text-base sm:text-lg font-bold text-cream">{formatINR(totalStaffAmount)}</span>
           </div>
         </div>
       </div>
 
-      {/* Info: staff sync source */}
-      <div className="flex items-start gap-2 bg-warm-beige/50 border border-border-warm/60 rounded-btn px-3.5 py-2.5">
+      {/* Info banner */}
+      <div className="flex items-start gap-2.5 bg-warm-beige/50 border border-border-warm/60 rounded-card px-4 py-3">
         <Info className="w-4 h-4 text-caramel mt-0.5 flex-shrink-0" />
-        <p className="text-[11px] text-caramel leading-relaxed">
-          The staff list and <span className="font-semibold">Fix Amount</span> come from the Staff-app attendance
-          system. Here you only fill each member&apos;s <span className="font-semibold text-expense-red">actual monthly amount</span>,
-          which is counted in your café expense.
+        <p className="text-xs text-caramel leading-relaxed">
+          Staff attendance days, advances, and deductions are fetched directly from the Staff-app. Fill each member&apos;s <span className="font-semibold text-expense-red">counted expense amount</span> to be included in your café&apos;s monthly total expense.
         </p>
       </div>
 
@@ -168,84 +201,67 @@ export const StaffScreen: React.FC = () => {
         />
       ) : (
         <>
-          {/* Mobile cards */}
+          {/* Mobile cards view */}
           <div className="grid grid-cols-1 gap-3 md:hidden">
-            {filteredStaff.map((staff, idx) => (
-              <div
-                key={staff.id}
-                className="bg-cream p-4 rounded-card border border-border-warm shadow-warm-sm space-y-3"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-warm-beige text-coffee flex items-center justify-center">
-                    <User className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-base font-bold text-coffee">{staff.name}</h4>
-                </div>
+            {filteredStaff.map((staff, idx) => {
+              const present = staff.presentDays !== undefined ? staff.presentDays : 0;
+              const advance = staff.advance || 0;
+              const deduction = staff.deduction || 0;
 
-                <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-border-warm/60 items-center">
-                  <div className="bg-warm-beige/40 p-2.5 rounded-btn h-full flex flex-col justify-center">
-                    <span className="text-[11px] font-semibold text-caramel uppercase tracking-wider block">
-                      Fix Amount
-                    </span>
-                    <span className="text-base font-bold text-caramel mt-0.5">{formatINR(staff.fixAmount)}</span>
-                  </div>
+              return (
+                <div
+                  key={staff.id}
+                  className="bg-cream p-4 rounded-card border border-border-warm shadow-warm-sm space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-warm-beige text-coffee flex items-center justify-center">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-base font-bold text-coffee">{staff.name}</h4>
+                        {staff.mobile && <p className="text-[11px] text-caramel">{staff.mobile}</p>}
+                      </div>
+                    </div>
 
-                  <div className="bg-cream border border-expense-red/30 p-1.5 rounded-btn focus-within:ring-2 focus-within:ring-expense-red/20 focus-within:border-expense-red transition-all">
-                    <span className="text-[10px] font-bold text-expense-red uppercase tracking-wider block px-1">
-                      Amount (Counted)
-                    </span>
-                    <div className="relative flex items-center mt-0.5">
-                      <span className="absolute left-1.5 text-sm font-bold text-expense-red select-none">₹</span>
-                      <input
-                        ref={el => (mobileInputRefs.current[idx] = el)}
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        autoComplete="off"
-                        spellCheck={false}
-                        value={staff.amount === 0 ? '' : staff.amount}
-                        placeholder="0"
-                        onFocus={e => e.target.select()}
-                        onChange={e => handleInlineAmountChange(staff.id, e.target.value, idx, false)}
-                        onKeyDown={e => handleKeyNav(e, idx, mobileInputRefs.current)}
-                        className="w-full h-8 pl-5 pr-2 bg-transparent text-base font-bold text-expense-red focus:outline-none"
-                      />
+                    <div className="text-right">
+                      <span className="text-[10px] uppercase font-semibold text-caramel block">Fix Salary</span>
+                      <span className="text-sm font-bold text-caramel">{formatINR(staff.fixAmount)}</span>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
 
-          {/* Desktop table */}
-          <div className="hidden md:block bg-cream rounded-card border border-border-warm shadow-warm-sm overflow-hidden">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border-warm bg-warm-beige/50 text-xs font-bold text-coffee uppercase tracking-wider">
-                  <th className="py-3.5 px-5">Staff Name</th>
-                  <th className="py-3.5 px-5">Fix Amount (Ref)</th>
-                  <th className="py-3.5 px-5">Amount (Counted)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-warm/60 text-sm">
-                {filteredStaff.map((staff, idx) => (
-                  <tr key={staff.id} className="hover:bg-warm-beige/30 transition-colors">
-                    <td className="py-3.5 px-5 font-bold text-coffee">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-warm-beige text-coffee flex items-center justify-center text-xs">
-                          <User className="w-3.5 h-3.5" />
-                        </div>
-                        <span>{staff.name}</span>
+                  {/* Attendance & Deductions Badge Row */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border-warm/50 text-xs">
+                    <div className="bg-warm-beige/70 px-2.5 py-1 rounded-btn flex items-center gap-1 text-coffee">
+                      <CalendarCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="font-semibold">{present} Days</span>
+                    </div>
+
+                    {advance > 0 && (
+                      <div className="bg-amber-500/10 text-amber-700 dark:text-amber-300 px-2.5 py-1 rounded-btn flex items-center gap-1">
+                        <CreditCard className="w-3.5 h-3.5" />
+                        <span>Adv: -{formatINR(advance)}</span>
                       </div>
-                    </td>
-                    <td className="py-3.5 px-5 font-bold text-caramel">{formatINR(staff.fixAmount)}</td>
-                    <td className="py-2.5 px-5">
-                      <div className="relative inline-flex items-center w-36 sm:w-44">
-                        <span className="absolute left-3 text-sm font-bold text-expense-red select-none pointer-events-none">
-                          ₹
-                        </span>
+                    )}
+
+                    {deduction > 0 && (
+                      <div className="bg-rose-500/10 text-rose-700 dark:text-rose-300 px-2.5 py-1 rounded-btn flex items-center gap-1">
+                        <TrendingDown className="w-3.5 h-3.5" />
+                        <span>Ded: -{formatINR(deduction)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Input Row */}
+                  <div className="pt-2 border-t border-border-warm/60">
+                    <div className="bg-cream border border-expense-red/30 p-1.5 rounded-btn focus-within:ring-2 focus-within:ring-expense-red/20 focus-within:border-expense-red transition-all">
+                      <span className="text-[10px] font-bold text-expense-red uppercase tracking-wider block px-1">
+                        Amount (Counted in Expense)
+                      </span>
+                      <div className="relative flex items-center mt-0.5">
+                        <span className="absolute left-1.5 text-sm font-bold text-expense-red select-none">₹</span>
                         <input
-                          ref={el => (desktopInputRefs.current[idx] = el)}
+                          ref={el => (mobileInputRefs.current[idx] = el)}
                           type="text"
                           inputMode="numeric"
                           pattern="[0-9]*"
@@ -254,14 +270,114 @@ export const StaffScreen: React.FC = () => {
                           value={staff.amount === 0 ? '' : staff.amount}
                           placeholder="0"
                           onFocus={e => e.target.select()}
-                          onChange={e => handleInlineAmountChange(staff.id, e.target.value, idx, true)}
-                          onKeyDown={e => handleKeyNav(e, idx, desktopInputRefs.current)}
-                          className="w-full h-10 pl-7 pr-3 bg-white border border-border-warm rounded-btn text-sm font-bold text-expense-red placeholder:text-coffee/30 focus:outline-none focus:ring-2 focus:ring-expense-red/20 focus:border-expense-red shadow-sm transition-all"
+                          onChange={e => handleInlineAmountChange(staff.id, e.target.value, idx, false)}
+                          onKeyDown={e => handleKeyNav(e, idx, mobileInputRefs.current)}
+                          className="w-full h-8 pl-5 pr-2 bg-transparent text-base font-bold text-expense-red focus:outline-none"
                         />
                       </div>
-                    </td>
-                  </tr>
-                ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-cream rounded-card border border-border-warm shadow-warm-sm overflow-hidden">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-border-warm bg-warm-beige/50 text-xs font-bold text-coffee uppercase tracking-wider">
+                  <th className="py-3.5 px-5">Staff Name</th>
+                  <th className="py-3.5 px-4 text-right">Fix Salary (Ref)</th>
+                  <th className="py-3.5 px-4 text-center">Attendance</th>
+                  <th className="py-3.5 px-4 text-right">Advance</th>
+                  <th className="py-3.5 px-4 text-right">Deduction</th>
+                  <th className="py-3.5 px-5 text-right">Amount (Counted)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border-warm/60 text-sm">
+                {filteredStaff.map((staff, idx) => {
+                  const present = staff.presentDays !== undefined ? staff.presentDays : 0;
+                  const advance = staff.advance || 0;
+                  const deduction = staff.deduction || 0;
+
+                  return (
+                    <tr key={staff.id} className="hover:bg-warm-beige/30 transition-colors">
+                      {/* Name */}
+                      <td className="py-3.5 px-5 font-bold text-coffee">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-warm-beige text-coffee flex items-center justify-center text-xs flex-shrink-0">
+                            <User className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span>{staff.name}</span>
+                            {staff.mobile && (
+                              <span className="text-[11px] font-normal text-caramel block">{staff.mobile}</span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Fix Salary */}
+                      <td className="py-3.5 px-4 text-right font-bold text-caramel">
+                        {formatINR(staff.fixAmount)}
+                      </td>
+
+                      {/* Attendance */}
+                      <td className="py-3.5 px-4 text-center">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                          <CalendarCheck className="w-3.5 h-3.5" />
+                          {present} Days
+                        </span>
+                      </td>
+
+                      {/* Advance */}
+                      <td className="py-3.5 px-4 text-right">
+                        {advance > 0 ? (
+                          <span className="font-semibold text-amber-700 dark:text-amber-400">
+                            -{formatINR(advance)}
+                          </span>
+                        ) : (
+                          <span className="text-coffee/40">—</span>
+                        )}
+                      </td>
+
+                      {/* Deduction */}
+                      <td className="py-3.5 px-4 text-right">
+                        {deduction > 0 ? (
+                          <span className="font-semibold text-rose-600 dark:text-rose-400">
+                            -{formatINR(deduction)}
+                          </span>
+                        ) : (
+                          <span className="text-coffee/40">—</span>
+                        )}
+                      </td>
+
+                      {/* Amount Counted Input */}
+                      <td className="py-2.5 px-5 text-right">
+                        <div className="relative inline-flex items-center w-36 sm:w-44">
+                          <span className="absolute left-3 text-sm font-bold text-expense-red select-none pointer-events-none">
+                            ₹
+                          </span>
+                          <input
+                            ref={el => (desktopInputRefs.current[idx] = el)}
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            autoComplete="off"
+                            spellCheck={false}
+                            value={staff.amount === 0 ? '' : staff.amount}
+                            placeholder="0"
+                            onFocus={e => e.target.select()}
+                            onChange={e => handleInlineAmountChange(staff.id, e.target.value, idx, true)}
+                            onKeyDown={e => handleKeyNav(e, idx, desktopInputRefs.current)}
+                            className="w-full h-10 pl-7 pr-3 bg-white border border-border-warm rounded-btn text-sm font-bold text-expense-red text-right placeholder:text-coffee/30 focus:outline-none focus:ring-2 focus:ring-expense-red/20 focus:border-expense-red shadow-sm transition-all"
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

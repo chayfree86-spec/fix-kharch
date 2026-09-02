@@ -3,13 +3,10 @@
 declare(strict_types=1);
 
 /**
- * Client for the Staff-app external API. Fetches the active staff for a
- * business over HTTP, authenticated with the shared API key from .env.
- *
- * @return array<int, array{id:int,name:string,monthlySalary:int,perDaySalary:int,salaryType:string}>
- * @throws RuntimeException when the Staff-app is unreachable or returns an error.
+ * Client for the Staff-app external API. Fetches active staff for a
+ * business along with monthly attendance, advance, and deductions.
  */
-function staffapp_fetch_staff(int $businessId): array
+function staffapp_fetch_staff(int $businessId, string $month = ''): array
 {
     $base = rtrim((string) ($_ENV['STAFF_APP_API_URL'] ?? ''), '/');
     $key = (string) ($_ENV['STAFF_APP_API_KEY'] ?? '');
@@ -18,7 +15,8 @@ function staffapp_fetch_staff(int $businessId): array
         throw new RuntimeException('Staff-app integration is not configured (STAFF_APP_API_URL / STAFF_APP_API_KEY).');
     }
 
-    $url = $base . '/external/staff.php?business_id=' . rawurlencode((string) $businessId);
+    $monthParam = $month !== '' ? '&month=' . rawurlencode($month) : '';
+    $url = $base . '/external/staff.php?business_id=' . rawurlencode((string) $businessId) . $monthParam;
 
     $ch = curl_init($url);
     curl_setopt_array($ch, [
@@ -26,7 +24,6 @@ function staffapp_fetch_staff(int $businessId): array
         CURLOPT_HTTPHEADER => ['X-Api-Key: ' . $key, 'Accept: application/json'],
         CURLOPT_TIMEOUT => 20,
         CURLOPT_CONNECTTIMEOUT => 15,
-        // Windows/XAMPP cURL often stalls on IPv6 DNS; force IPv4.
         CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
     ]);
     $body = curl_exec($ch);
@@ -51,5 +48,11 @@ function staffapp_fetch_staff(int $businessId): array
         'monthlySalary' => (int) ($s['monthlySalary'] ?? 0),
         'perDaySalary' => (int) ($s['perDaySalary'] ?? 0),
         'salaryType' => (string) ($s['salaryType'] ?? 'monthly'),
+        'presentDays' => (float) ($s['presentDays'] ?? 0.0),
+        'absentDays' => (int) ($s['absentDays'] ?? 0),
+        'advance' => (int) ($s['advance'] ?? 0),
+        'deduction' => (int) ($s['deduction'] ?? 0),
+        'earnedSalary' => (int) ($s['earnedSalary'] ?? 0),
+        'netPayable' => (int) ($s['netPayable'] ?? 0),
     ], $staff);
 }
