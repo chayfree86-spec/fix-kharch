@@ -10,7 +10,10 @@ export function getStoredTheme(): Theme {
   } catch {
     /* ignore */
   }
-  return 'light'; // light is the default (locked) theme
+  if (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) {
+    return 'dark';
+  }
+  return 'light'; // default
 }
 
 export function saveTheme(theme: Theme): void {
@@ -22,28 +25,60 @@ export function saveTheme(theme: Theme): void {
 }
 
 export function applyTheme(theme: Theme): void {
+  if (typeof document === 'undefined') return;
   const root = document.documentElement;
   root.classList.toggle('dark', theme === 'dark');
-  // Keep the mobile browser UI (status bar) colour in sync with the theme.
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', theme === 'dark' ? '#1A120C' : '#3B2314');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#120c08' : '#3B2314');
+}
+
+// Global subscribers for instant reactive synchronization across all components
+const themeListeners = new Set<(theme: Theme) => void>();
+let currentGlobalTheme: Theme = getStoredTheme();
+
+function notifyThemeChange(newTheme: Theme) {
+  currentGlobalTheme = newTheme;
+  saveTheme(newTheme);
+  applyTheme(newTheme);
+  themeListeners.forEach(fn => fn(newTheme));
 }
 
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(getStoredTheme);
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) {
+      return 'dark';
+    }
+    return currentGlobalTheme;
+  });
 
   useEffect(() => {
-    applyTheme(theme);
-    try {
-      localStorage.setItem(THEME_KEY, theme);
-    } catch {
-      /* ignore */
-    }
-  }, [theme]);
+    const syncFromDOM = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      const active: Theme = isDark ? 'dark' : 'light';
+      setTheme(active);
+    };
 
-  const toggleTheme = useCallback(() => {
-    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+    syncFromDOM();
+
+    const handleThemeChange = (newTheme: Theme) => {
+      setTheme(newTheme);
+    };
+
+    themeListeners.add(handleThemeChange);
+    return () => {
+      themeListeners.delete(handleThemeChange);
+    };
   }, []);
 
-  return { theme, toggleTheme };
+  const toggleTheme = useCallback(() => {
+    const isCurrentlyDark = document.documentElement.classList.contains('dark');
+    const nextTheme: Theme = isCurrentlyDark ? 'light' : 'dark';
+    notifyThemeChange(nextTheme);
+  }, []);
+
+  const setExplicitTheme = useCallback((newTheme: Theme) => {
+    notifyThemeChange(newTheme);
+  }, []);
+
+  return { theme, toggleTheme, setTheme: setExplicitTheme };
 }

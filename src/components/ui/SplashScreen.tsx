@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Loader } from './Loader';
+import { useTheme } from '../../hooks/useTheme';
 
 interface SplashScreenProps {
   onFinish: () => void;
@@ -7,6 +8,7 @@ interface SplashScreenProps {
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   const [fade, setFade] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -17,6 +19,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
     return () => clearTimeout(timer);
   }, [onFinish]);
 
+  const isDark =
+    theme === 'dark' ||
+    (typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+
   return (
     <div
       className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-warm-beige transition-opacity duration-400 select-none ${
@@ -24,12 +30,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       }`}
     >
       <div className="flex flex-col items-center justify-center p-4 max-w-md w-full mx-auto animate-fade-in">
-        {/* Transparent Brand Splash Graphic (Zero rectangular border/box) */}
-        <div className="w-full max-w-[280px] sm:max-w-[340px] flex items-center justify-center">
+        {/* Brand Splash Graphic — websplash-dark.png for Dark Mode */}
+        <div className="w-full max-w-[260px] sm:max-w-[300px] flex items-center justify-center">
           <img
-            src="/websplash-transparent.png"
+            src={isDark ? '/websplash-dark.png' : '/websplash-transparent.png'}
             alt="Fix Spend Splash"
-            className="w-full h-auto object-contain animate-slide-up"
+            className="w-full h-auto object-contain animate-slide-up select-none rounded-2xl transition-all"
             loading="eager"
           />
         </div>

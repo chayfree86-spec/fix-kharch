@@ -1,10 +1,11 @@
 import React from 'react';
+import { useTheme } from '../../hooks/useTheme';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   showTagline?: boolean;
   className?: string;
-  variant?: 'light' | 'dark'; // 'light' means dark background, 'dark' means light background
+  variant?: 'light' | 'dark' | 'auto'; // 'light' means dark background, 'dark' means light background, 'auto' matches active theme
   mode?: 'full' | 'icon';
 }
 
@@ -12,9 +13,15 @@ export const Logo: React.FC<LogoProps> = ({
   size = 'md',
   showTagline = false,
   className = '',
-  variant = 'dark',
+  variant = 'auto',
   mode = 'full',
 }) => {
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
+
+  // Determine whether to use dark background asset or light background asset
+  const isDarkBg = variant === 'light' ? true : variant === 'dark' ? false : isDarkMode;
+
   const heightClasses = {
     sm: 'h-8 sm:h-9 w-auto',
     md: 'h-10 sm:h-11 w-auto',
@@ -45,20 +52,24 @@ export const Logo: React.FC<LogoProps> = ({
     );
   }
 
-  const logoSrc = variant === 'light' ? '/darkbg-logo-header.png' : '/light-logo-header.png';
+  const logoSrc = isDarkBg ? '/darkbg-logo-header.png' : '/light-logo-header.png';
 
   return (
     <div className={`flex flex-col items-center justify-center w-full select-none ${className}`}>
       <img
         src={logoSrc}
         alt="Fix Spend - Manage Fixed Expenses. Grow Your Café."
-        className={`${heightClasses[size]} object-contain transition-all mix-blend-multiply`}
+        className={`${heightClasses[size]} object-contain transition-all ${
+          isDarkBg ? 'mix-blend-screen contrast-125' : 'mix-blend-multiply'
+        }`}
         loading="eager"
       />
       {showTagline && (
-        <span className={`text-[10px] sm:text-xs font-semibold tracking-wider uppercase mt-1 ${
-          variant === 'light' ? 'text-cream/90' : 'text-caramel'
-        }`}>
+        <span
+          className={`text-[10px] sm:text-xs font-semibold tracking-wider uppercase mt-1 ${
+            isDarkBg ? 'text-cream/90' : 'text-caramel'
+          }`}
+        >
           Manage Fixed Expenses. Grow Your Café.
         </span>
       )}

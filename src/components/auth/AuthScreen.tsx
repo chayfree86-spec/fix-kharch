@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Coffee, LogIn, Loader2 } from 'lucide-react';
+import { Coffee, LogIn, Loader2, Moon, Sun } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useTheme } from '../../hooks/useTheme';
 
 // Remember the last successful login so the form prefills next time.
 const SAVED_ID_KEY = 'fix_spend_login_id';
@@ -24,6 +25,7 @@ const decode = (v: string | null) => {
 
 export const AuthScreen: React.FC = () => {
   const { login } = useApp();
+  const { theme, toggleTheme } = useTheme();
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -50,14 +52,24 @@ export const AuthScreen: React.FC = () => {
     'w-full h-12 px-4 bg-cream border border-border-warm rounded-btn text-base font-semibold text-coffee-dark placeholder:text-coffee/35 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-coffee/20 focus:border-coffee transition-all shadow-sm';
 
   return (
-    <div className="min-h-dvh flex items-center justify-center p-4 bg-warm-beige">
+    <div className="min-h-dvh flex items-center justify-center p-4 bg-warm-beige relative">
+      {/* Top right theme toggle */}
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="absolute top-4 right-4 p-2.5 rounded-btn bg-cream border border-border-warm text-coffee hover:bg-warm-beige/80 transition-all shadow-warm-sm"
+        aria-label="Toggle theme"
+      >
+        {theme === 'dark' ? <Sun className="w-4 h-4 text-caramel" /> : <Moon className="w-4 h-4 text-coffee" />}
+      </button>
+
       <div className="w-full max-w-md">
-        {/* Brand — same graphic as the splash screen */}
+        {/* Brand Graphic — websplash-dark.png for Dark Mode & websplash-transparent.png for Light Mode */}
         <div className="flex flex-col items-center text-center mb-5">
           <img
-            src="/websplash-transparent.png"
+            src={theme === 'dark' ? '/websplash-dark.png' : '/websplash-transparent.png'}
             alt="Fix Spend — Manage Fixed Expenses. Grow Your Café."
-            className="w-full max-w-[230px] sm:max-w-[260px] h-auto object-contain select-none"
+            className="w-full max-w-[220px] sm:max-w-[250px] h-auto object-contain select-none rounded-2xl transition-all"
             loading="eager"
           />
         </div>
