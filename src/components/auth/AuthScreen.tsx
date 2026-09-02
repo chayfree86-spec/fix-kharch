@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Coffee, LogIn, Loader2, Moon, Sun } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../hooks/useTheme';
+import { FloatingCafeBackground } from './FloatingCafeBackground';
 
 // Remember the last successful login so the form prefills next time.
 const SAVED_ID_KEY = 'fix_spend_login_id';
@@ -52,29 +53,32 @@ export const AuthScreen: React.FC = () => {
     'w-full h-12 px-4 bg-cream border border-border-warm rounded-btn text-base font-semibold text-coffee-dark placeholder:text-coffee/35 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-coffee/20 focus:border-coffee transition-all shadow-sm';
 
   return (
-    <div className="min-h-dvh flex items-center justify-center p-4 bg-warm-beige relative">
+    <div className="min-h-dvh flex items-center justify-center p-4 bg-warm-beige relative overflow-hidden">
+      {/* 3D Floating Coffee Beans & Tea Leaves Interactive Background */}
+      <FloatingCafeBackground />
+
       {/* Top right theme toggle */}
       <button
         type="button"
         onClick={toggleTheme}
-        className="absolute top-4 right-4 p-2.5 rounded-btn bg-cream border border-border-warm text-coffee hover:bg-warm-beige/80 transition-all shadow-warm-sm"
+        className="absolute top-4 right-4 z-30 p-2.5 rounded-btn bg-cream/90 backdrop-blur-md border border-border-warm text-coffee hover:bg-warm-beige/80 transition-all shadow-warm-sm cursor-pointer"
         aria-label="Toggle theme"
       >
         {theme === 'dark' ? <Sun className="w-4 h-4 text-caramel" /> : <Moon className="w-4 h-4 text-coffee" />}
       </button>
 
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md relative z-10 py-2">
         {/* Brand Graphic — websplash-dark.png for Dark Mode & websplash-transparent.png for Light Mode */}
-        <div className="flex flex-col items-center text-center mb-5">
+        <div className="flex flex-col items-center text-center mb-3">
           <img
             src={theme === 'dark' ? '/websplash-dark.png' : '/websplash-transparent.png'}
             alt="Fix Spend — Manage Fixed Expenses. Grow Your Café."
-            className="w-full max-w-[220px] sm:max-w-[250px] h-auto object-contain select-none rounded-2xl transition-all"
+            className="w-full max-w-[180px] sm:max-w-[200px] h-auto object-contain select-none transition-all drop-shadow-md"
             loading="eager"
           />
         </div>
 
-        <div className="bg-cream rounded-card border border-border-warm shadow-warm-sm p-5 sm:p-6">
+        <div className="bg-cream/95 backdrop-blur-md rounded-card border border-border-warm shadow-warm-lg p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-5">
             <div className="w-9 h-9 rounded-btn bg-coffee text-cream flex items-center justify-center">
               <LogIn className="w-4 h-4" />
