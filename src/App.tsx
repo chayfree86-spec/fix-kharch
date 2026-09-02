@@ -13,6 +13,7 @@ import { OtherExpensesScreen } from './pages/OtherExpensesScreen';
 import { GenericCategoryScreen } from './pages/GenericCategoryScreen';
 import { ReportsScreen } from './pages/ReportsScreen';
 import { SettingsScreen } from './pages/SettingsScreen';
+import { PageMaskTransition } from './components/ui/PageMaskTransition';
 
 const MainContent: React.FC = () => {
   const { currentTab, categories } = useApp();
@@ -52,9 +53,9 @@ const MainContent: React.FC = () => {
 
   return (
     <AppLayout>
-      <div key={currentTab} className="animate-page-switch">
+      <PageMaskTransition pageKey={currentTab}>
         {renderScreen()}
-      </div>
+      </PageMaskTransition>
     </AppLayout>
   );
 };

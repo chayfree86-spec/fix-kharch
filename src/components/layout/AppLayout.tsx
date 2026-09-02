@@ -23,7 +23,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <AppHeader />
 
         {/* Page Content Container */}
-        <main className="flex-1 max-w-6xl w-full mx-auto px-3 py-3.5 sm:px-6 sm:py-6">
+        <main className="flex-1 max-w-[1720px] w-full mx-auto px-3.5 py-4 sm:px-6 lg:px-8 xl:px-10 sm:py-6">
           {children}
         </main>
       </div>

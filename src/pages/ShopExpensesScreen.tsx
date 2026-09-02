@@ -90,7 +90,7 @@ export const ShopExpensesScreen: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div className="space-y-4">
       {/* Header Banner */}
       <div className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -148,7 +148,7 @@ export const ShopExpensesScreen: React.FC = () => {
           onAction={searchQuery ? undefined : handleOpenAdd}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-5">
           {filteredExpenses.map(item => (
             <div
               key={item.id}

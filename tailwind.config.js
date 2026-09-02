@@ -1,5 +1,13 @@
 /** @type {import('tailwindcss').Config} */
+
+// Colors are driven by CSS variables (RGB triplets) so a single `.dark` class
+// on <html> swaps the whole palette — including opacity modifiers like
+// bg-cream/70 — without changing any component classes. Light values live in
+// :root and match the original hex exactly, so the light theme is unchanged.
+const withVar = (name) => `rgb(var(--c-${name}) / <alpha-value>)`;
+
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -8,47 +16,47 @@ export default {
     extend: {
       colors: {
         coffee: {
-          DEFAULT: '#3B2314',
-          dark: '#26160B',
-          light: '#533420',
-          50: '#FBF8F5',
-          100: '#F5EFEA',
-          200: '#E6D7CB',
-          300: '#D4BCAC',
-          800: '#3B2314',
-          900: '#26160B',
+          DEFAULT: withVar('coffee'),
+          dark: withVar('coffee-dark'),
+          light: withVar('coffee-light'),
+          50: withVar('coffee-50'),
+          100: withVar('coffee-100'),
+          200: withVar('coffee-200'),
+          300: withVar('coffee-300'),
+          800: withVar('coffee-800'),
+          900: withVar('coffee-900'),
         },
         caramel: {
-          DEFAULT: '#8B4A20',
-          dark: '#703816',
-          light: '#A65C2B',
-          50: '#FAF4EF',
-          100: '#F2E4D8',
-          200: '#E3C5AD',
+          DEFAULT: withVar('caramel'),
+          dark: withVar('caramel-dark'),
+          light: withVar('caramel-light'),
+          50: withVar('caramel-50'),
+          100: withVar('caramel-100'),
+          200: withVar('caramel-200'),
         },
         'warm-beige': {
-          DEFAULT: '#F5E6D3',
-          light: '#FAF2E8',
-          dark: '#E8D4BE',
+          DEFAULT: withVar('warm-beige'),
+          light: withVar('warm-beige-light'),
+          dark: withVar('warm-beige-dark'),
         },
         cream: {
-          DEFAULT: '#FFF6ED',
-          pure: '#FFFFFF',
-          dark: '#FCEFE2',
+          DEFAULT: withVar('cream'),
+          pure: withVar('cream-pure'),
+          dark: withVar('cream-dark'),
         },
         'expense-red': {
-          DEFAULT: '#C62828',
-          dark: '#B71C1C',
-          light: '#D32F2F',
-          50: '#FFEBEE',
-          100: '#FFCDD2',
+          DEFAULT: withVar('expense-red'),
+          dark: withVar('expense-red-dark'),
+          light: withVar('expense-red-light'),
+          50: withVar('expense-red-50'),
+          100: withVar('expense-red-100'),
         },
         'accent-red': {
-          DEFAULT: '#E53935',
-          dark: '#C62828',
-          light: '#EF5350',
+          DEFAULT: withVar('accent-red'),
+          dark: withVar('accent-red-dark'),
+          light: withVar('accent-red-light'),
         },
-        'border-warm': '#E5D3C1',
+        'border-warm': withVar('border-warm'),
       },
       fontFamily: {
         sans: ['Poppins', 'system-ui', '-apple-system', 'sans-serif'],

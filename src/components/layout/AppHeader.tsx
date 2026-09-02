@@ -8,16 +8,20 @@ import {
   ChartNoAxesCombined,
   Settings,
   ChevronLeft,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { MonthSelector } from '../ui/MonthSelector';
 import { useApp } from '../../context/AppContext';
 import { getCategoryIconComponent } from '../../utils/categoryIcons';
+import { useTheme } from '../../hooks/useTheme';
 
 // Screens reachable directly from the mobile bottom nav — no back button needed.
 const PRIMARY_MOBILE_TABS = new Set(['dashboard', 'shop', 'reports']);
 
 export const AppHeader: React.FC = () => {
   const { currentTab, setCurrentTab, categories } = useApp();
+  const { theme, toggleTheme } = useTheme();
 
   const getPageInfo = () => {
     switch (currentTab) {
@@ -54,7 +58,7 @@ export const AppHeader: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-30 bg-warm-beige/95 backdrop-blur-md border-b border-border-warm/70 safe-top">
-      <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 px-2.5 py-2.5 sm:px-6 sm:py-3">
+      <div className="max-w-[1720px] w-full mx-auto flex items-center justify-between gap-2 px-3.5 py-2.5 sm:px-6 lg:px-8 xl:px-10 sm:py-3.5">
         {/* Page Title & Breadcrumb Icon */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
           {/* Mobile back button — only on screens not reachable from the bottom nav directly */}
@@ -82,8 +86,17 @@ export const AppHeader: React.FC = () => {
           </div>
         </div>
 
-        {/* Month Selector on right */}
-        <div className="w-auto flex-shrink-0">
+        {/* Theme switcher + Month Selector */}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            title={theme === 'dark' ? 'Light theme' : 'Dark theme'}
+            className="w-9 h-9 rounded-full bg-cream border border-border-warm text-coffee flex items-center justify-center shadow-sm active:scale-95 transition-all"
+          >
+            {theme === 'dark' ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+          </button>
           <MonthSelector />
         </div>
       </div>

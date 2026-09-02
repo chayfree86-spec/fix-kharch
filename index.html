@@ -12,6 +12,18 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
 
+    <!-- Apply the saved theme before render to avoid a flash of the wrong theme -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('fix_spend_theme');
+          if (t === 'dark') {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- PWA & Mobile Web App Meta -->
     <meta name="theme-color" content="#3B2314" />
     <meta name="apple-mobile-web-app-capable" content="yes" />

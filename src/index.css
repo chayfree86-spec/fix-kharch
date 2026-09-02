@@ -2,6 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ------------------------------------------------------------------
+   Theme tokens (RGB triplets). Light values match the original hex
+   exactly, so the light theme is unchanged / "locked". The `.dark`
+   class on <html> swaps only these values — brand-consistent dark
+   (espresso backgrounds, cream text, red accents).
+   ------------------------------------------------------------------ */
+:root {
+  --c-coffee: 59 35 20;
+  --c-coffee-dark: 38 22 11;
+  --c-coffee-light: 83 52 32;
+  --c-coffee-50: 251 248 245;
+  --c-coffee-100: 245 239 234;
+  --c-coffee-200: 230 215 203;
+  --c-coffee-300: 212 188 172;
+  --c-coffee-800: 59 35 20;
+  --c-coffee-900: 38 22 11;
+  --c-caramel: 139 74 32;
+  --c-caramel-dark: 112 56 22;
+  --c-caramel-light: 166 92 43;
+  --c-caramel-50: 250 244 239;
+  --c-caramel-100: 242 228 216;
+  --c-caramel-200: 227 197 173;
+  --c-warm-beige: 245 230 211;
+  --c-warm-beige-light: 250 242 232;
+  --c-warm-beige-dark: 232 212 190;
+  --c-cream: 255 246 237;
+  --c-cream-pure: 255 255 255;
+  --c-cream-dark: 252 239 226;
+  --c-expense-red: 198 40 40;
+  --c-expense-red-dark: 183 28 28;
+  --c-expense-red-light: 211 47 47;
+  --c-expense-red-50: 255 235 238;
+  --c-expense-red-100: 255 205 210;
+  --c-accent-red: 229 57 53;
+  --c-accent-red-dark: 198 40 40;
+  --c-accent-red-light: 239 83 80;
+  --c-border-warm: 229 211 193;
+}
+
+.dark {
+  color-scheme: dark;
+  --c-coffee: 245 235 224;        /* primary text → light cream */
+  --c-coffee-dark: 255 248 240;   /* stronger text / title */
+  --c-coffee-light: 215 198 180;  /* muted warm text */
+  --c-coffee-50: 32 21 14;        /* deep container base */
+  --c-coffee-100: 44 30 20;       /* dark coffee card surface */
+  --c-coffee-200: 74 52 38;       /* elevated surface */
+  --c-coffee-300: 104 76 56;      /* inner borders */
+  --c-coffee-800: 245 235 224;
+  --c-coffee-900: 255 248 240;
+  --c-caramel: 220 178 140;       /* secondary text (warm caramel glow) */
+  --c-caramel-dark: 202 156 114;
+  --c-caramel-light: 235 202 170;
+  --c-caramel-50: 40 26 17;
+  --c-caramel-100: 56 38 25;
+  --c-caramel-200: 92 64 44;
+  --c-warm-beige: 18 12 7;        /* page background (deep roasted espresso) */
+  --c-warm-beige-light: 28 19 12;
+  --c-warm-beige-dark: 14 9 5;
+  --c-cream: 36 24 16;            /* card / surface base */
+  --c-cream-pure: 46 31 21;       /* elevated card */
+  --c-cream-dark: 28 18 12;       /* recessed surface */
+  --c-expense-red: 238 72 67;     /* vibrant 3D red */
+  --c-expense-red-dark: 210 48 44;
+  --c-expense-red-light: 245 108 104;
+  --c-expense-red-50: 52 23 22;   /* subtle red surface */
+  --c-expense-red-100: 76 33 31;
+  --c-accent-red: 245 108 104;
+  --c-accent-red-dark: 238 72 67;
+  --c-accent-red-light: 250 142 138;
+  --c-border-warm: 68 47 33;      /* 3D dark coffee border */
+}
+
 @layer base {
   * {
     -webkit-tap-highlight-color: transparent;
@@ -15,13 +88,22 @@
   }
 
   body {
-    background-color: #F5E6D3;
-    color: #3B2314;
+    background-color: rgb(var(--c-warm-beige));
+    color: rgb(var(--c-coffee));
     font-family: 'Poppins', sans-serif;
     overflow-x: hidden;
     max-width: 100vw;
     min-height: 100svh;
     min-height: 100dvh;
+  }
+
+  /* 3D Ambient Lighting in Dark Mode */
+  .dark body {
+    background-color: #120c08;
+    background-image: 
+      radial-gradient(ellipse 90% 45% at 50% -10%, rgba(139, 74, 32, 0.16), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 100% 100%, rgba(59, 35, 20, 0.22), transparent 60%);
+    background-attachment: fixed;
   }
 
   #root {
@@ -119,11 +201,14 @@
 @keyframes pageSwitch {
   0% {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(12px) scale(0.994);
+  }
+  60% {
+    opacity: 0.85;
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -136,6 +221,132 @@
 }
 
 .animate-page-switch {
-  animation: pageSwitch 0.24s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: pageSwitch 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: opacity, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* ------------------------------------------------------------------
+   3D Dark Coffee Theme: Gradients, Specular Highlights & Depth Tokens
+   ------------------------------------------------------------------ */
+
+/* 1. 3D Dark Coffee Cards & Containers */
+.dark .bg-cream,
+.dark .bg-cream\/95 {
+  background-image: linear-gradient(180deg, rgba(54, 36, 25, 0.96) 0%, rgba(33, 22, 15, 0.98) 100%) !important;
+  box-shadow: 
+    0 8px 24px -3px rgba(0, 0, 0, 0.6),
+    0 2px 6px -1px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(245, 235, 224, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5) !important;
+  border-color: rgba(94, 66, 46, 0.5) !important;
+}
+
+/* 2. Elevated 3D Dark Coffee Cards (Sidebar, Modals, Dialogs) */
+.dark aside,
+.dark .dark-3d-elevated {
+  background-image: linear-gradient(180deg, rgba(48, 32, 22, 0.98) 0%, rgba(26, 17, 11, 0.99) 100%) !important;
+  box-shadow: 
+    0 14px 36px -4px rgba(0, 0, 0, 0.75),
+    0 4px 10px -2px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(245, 235, 224, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6) !important;
+  border-color: rgba(98, 68, 48, 0.55) !important;
+}
+
+/* 3. Header & Floating Bars (Top-rim reflection + blur) */
+.dark header {
+  background-image: linear-gradient(180deg, rgba(34, 23, 16, 0.94) 0%, rgba(22, 14, 9, 0.96) 100%) !important;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(245, 235, 224, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4) !important;
+  border-bottom-color: rgba(84, 58, 40, 0.5) !important;
+}
+
+.dark nav[aria-label="Mobile Navigation"] {
+  background-image: linear-gradient(180deg, rgba(46, 30, 20, 0.97) 0%, rgba(24, 16, 10, 0.98) 100%) !important;
+  box-shadow: 
+    0 -6px 20px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(245, 235, 224, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5) !important;
+  border-top-color: rgba(92, 64, 45, 0.5) !important;
+}
+
+/* 4. 3D Coffee Buttons & Active States */
+.dark .bg-coffee {
+  background-image: linear-gradient(180deg, #844c27 0%, #4e2b12 100%) !important;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(166, 92, 43, 0.45) !important;
+  color: rgb(255 248 240) !important;
+}
+
+.dark .bg-coffee:hover {
+  background-image: linear-gradient(180deg, #99592f 0%, #5d3416 100%) !important;
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45) !important;
+}
+
+.dark .bg-coffee:active {
+  background-image: linear-gradient(180deg, #44240e 0%, #683917 100%) !important;
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.7),
+    inset 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+  transform: translateY(1px);
+}
+
+/* 5. 3D Red Expense Buttons */
+.dark .bg-expense-red {
+  background-image: linear-gradient(180deg, #ea4335 0%, #ba1c18 100%) !important;
+  box-shadow: 
+    0 4px 14px rgba(186, 28, 24, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(234, 67, 53, 0.4) !important;
+}
+
+.dark .bg-expense-red:hover {
+  background-image: linear-gradient(180deg, #f05448 0%, #cc231f 100%) !important;
+}
+
+/* 6. 3D Inset Inputs in Dark Mode */
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark select,
+.dark textarea {
+  background-color: rgba(22, 14, 9, 0.85) !important;
+  box-shadow: 
+    inset 0 2px 5px rgba(0, 0, 0, 0.6),
+    0 1px 0 rgba(245, 235, 224, 0.06) !important;
+  border-color: rgba(86, 60, 42, 0.6) !important;
+  color: rgb(245 235 224) !important;
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: rgba(214, 142, 88, 0.9) !important;
+  box-shadow: 
+    inset 0 2px 5px rgba(0, 0, 0, 0.5),
+    0 0 0 3px rgba(139, 74, 32, 0.3),
+    0 1px 0 rgba(245, 235, 224, 0.1) !important;
+}
+
+/* 7. dual-role token preservation */
+.dark .text-cream {
+  color: rgb(245 235 224);
+}
+.dark .text-cream\/90 {
+  color: rgb(245 235 224 / 0.9);
+}
+
+/* Modal / sheet backdrop must dim the screen with dark coffee vignette */
+.dark .bg-coffee-dark\/65 {
+  background-color: rgba(6, 4, 2, 0.8) !important;
+  backdrop-filter: blur(8px);
 }

@@ -10,8 +10,9 @@ import { useApp } from '../context/AppContext';
 import { formatINR } from '../utils/currency';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { getCategoryIconComponent } from '../utils/categoryIcons';
+import { useTheme } from '../hooks/useTheme';
 
-const CHART_COLORS = [
+const LIGHT_CHART_COLORS = [
   '#3B2314',
   '#8B4A20',
   '#C62828',
@@ -23,8 +24,23 @@ const CHART_COLORS = [
   '#D32F2F',
 ];
 
+const DARK_CHART_COLORS = [
+  '#E2A572',
+  '#F06A5D',
+  '#D98544',
+  '#F49D5E',
+  '#B87A54',
+  '#FF856F',
+  '#D2A884',
+  '#F68576',
+  '#E5AF88',
+];
+
 export const Dashboard: React.FC = () => {
   const { summary, setCurrentTab, setQuickActionType, categories, selectedMonthData } = useApp();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const palette = isDark ? DARK_CHART_COLORS : LIGHT_CHART_COLORS;
 
   const enabledCategories = categories.filter(c => c.isEnabled);
 
@@ -43,50 +59,50 @@ export const Dashboard: React.FC = () => {
       return {
         name: cat.name,
         value: val,
-        color: CHART_COLORS[index % CHART_COLORS.length],
+        color: palette[index % palette.length],
       };
     })
     .filter(item => item.value > 0);
 
   return (
-    <div className="flex flex-col gap-5 animate-fade-in pb-4">
+    <div className="flex flex-col gap-6 pb-4">
       {/* 1. PRIMARY FINANCIAL SUMMARY CARDS (Top priority: Budget, Expense, Balance) */}
-      <section aria-label="Financial Summary" className="order-2 md:order-1 grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <section aria-label="Financial Summary" className="order-2 md:order-1 grid grid-cols-2 sm:grid-cols-3 gap-3.5 sm:gap-4.5 lg:gap-6">
         {/* CARD 1: Total Budget (Coffee Brown dominant) */}
-        <div className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm flex flex-col justify-between relative overflow-hidden">
+        <div className="bg-cream rounded-card p-4 sm:p-5 lg:p-6 border border-border-warm shadow-warm-sm flex flex-col justify-between relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-caramel uppercase tracking-wider">
               Total Budget
             </span>
-            <div className="w-8 h-8 rounded-lg bg-coffee/10 text-coffee flex items-center justify-center">
-              <WalletCards className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-lg bg-coffee/10 text-coffee flex items-center justify-center">
+              <WalletCards className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl sm:text-3xl font-bold text-coffee tracking-tight">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-coffee tracking-tight">
               {formatINR(summary.budget)}
             </div>
-            <p className="text-[11px] text-caramel mt-1 font-medium">
+            <p className="text-[11px] sm:text-xs text-caramel mt-1 font-medium">
               Monthly planned expense limit
             </p>
           </div>
         </div>
 
         {/* CARD 2: Total Expense (Expense Red) */}
-        <div className="bg-cream rounded-card p-4 sm:p-5 border border-expense-red/30 shadow-warm-sm flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-cream to-expense-red-50/40">
+        <div className="bg-cream rounded-card p-4 sm:p-5 lg:p-6 border border-expense-red/30 shadow-warm-sm flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-cream to-expense-red-50/40">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-expense-red uppercase tracking-wider">
               Total Expense
             </span>
-            <div className="w-8 h-8 rounded-lg bg-expense-red/15 text-expense-red flex items-center justify-center">
-              <Receipt className="w-4 h-4 stroke-[2.5]" />
+            <div className="w-9 h-9 rounded-lg bg-expense-red/15 text-expense-red flex items-center justify-center">
+              <Receipt className="w-5 h-5 stroke-[2.5]" />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl sm:text-3xl font-bold text-expense-red tracking-tight">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-expense-red tracking-tight">
               {formatINR(summary.totalExpense)}
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-expense-red font-semibold mt-1">
+            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-expense-red font-semibold mt-1">
               <TrendingDown className="w-3.5 h-3.5" />
               <span>Sum of all {enabledCategories.length} active categories</span>
             </div>
@@ -95,7 +111,7 @@ export const Dashboard: React.FC = () => {
 
         {/* CARD 3: Balance — full width on the second mobile row, normal 3rd column on desktop */}
         <div
-          className={`col-span-2 sm:col-span-1 rounded-card p-4 sm:p-5 border shadow-warm-sm flex flex-col justify-between relative overflow-hidden ${
+          className={`col-span-2 sm:col-span-1 rounded-card p-4 sm:p-5 lg:p-6 border shadow-warm-sm flex flex-col justify-between relative overflow-hidden ${
             summary.isDeficit
               ? 'bg-cream border-expense-red/40 from-cream to-expense-red-50/60'
               : 'bg-cream border-border-warm'
@@ -110,22 +126,22 @@ export const Dashboard: React.FC = () => {
               Balance
             </span>
             <div
-              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              className={`w-9 h-9 rounded-lg flex items-center justify-center ${
                 summary.isDeficit ? 'bg-expense-red/15 text-expense-red' : 'bg-coffee/10 text-coffee'
               }`}
             >
-              <Scale className="w-4 h-4" />
+              <Scale className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-3">
             <div
-              className={`text-2xl sm:text-3xl font-bold tracking-tight ${
+              className={`text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight ${
                 summary.isDeficit ? 'text-expense-red' : 'text-coffee'
               }`}
             >
               {formatINR(summary.balance)}
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] font-semibold mt-1">
+            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold mt-1">
               <span
                 className={`inline-block w-2 h-2 rounded-full ${
                   summary.isDeficit ? 'bg-expense-red' : 'bg-coffee'
@@ -147,7 +163,7 @@ export const Dashboard: React.FC = () => {
             Quick Add
           </h3>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 lg:gap-4 xl:gap-5">
           {enabledCategories.slice(0, 4).map(cat => {
             const Icon = getCategoryIconComponent(cat.icon);
             return (
@@ -162,9 +178,9 @@ export const Dashboard: React.FC = () => {
                     setCurrentTab(cat.id);
                   }
                 }}
-                className="flex items-center gap-2 p-3 bg-cream hover:bg-cream-dark border border-border-warm rounded-btn font-semibold text-xs text-coffee transition-all shadow-sm active:scale-[0.98] group"
+                className="flex items-center gap-3 p-3.5 sm:p-4 bg-cream hover:bg-cream-dark border border-border-warm rounded-btn font-semibold text-xs sm:text-sm text-coffee transition-all shadow-sm active:scale-[0.98] group"
               >
-                <div className="w-7 h-7 rounded-lg bg-coffee text-cream flex items-center justify-center group-hover:scale-105 transition-transform flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-coffee text-cream flex items-center justify-center group-hover:scale-105 transition-transform flex-shrink-0">
                   <Icon className="w-4 h-4" />
                 </div>
                 <span className="truncate">{cat.name}</span>
@@ -177,17 +193,17 @@ export const Dashboard: React.FC = () => {
       {/* 3. EXPENSE BREAKDOWN CARDS — the primary section: shown first on mobile
              so all categories are visible without scrolling. */}
       <section aria-label="Expense Breakdown" className="order-1 md:order-3">
-        <div className="flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center justify-between mb-3.5 px-1">
           <div className="flex items-center gap-2">
-            <span className="w-1 h-4 rounded-full bg-expense-red" />
-            <h3 className="text-base sm:text-lg font-bold text-coffee tracking-tight">
+            <span className="w-1.5 h-4 rounded-full bg-expense-red" />
+            <h3 className="text-base sm:text-lg lg:text-xl font-bold text-coffee tracking-tight">
               Expense Breakdown
             </h3>
           </div>
           <span className="text-xs text-caramel font-medium">{enabledCategories.length} Categories</span>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-5">
           {enabledCategories.map(cat => {
             const Icon = getCategoryIconComponent(cat.icon);
             let catAmount = 0;
@@ -211,6 +227,14 @@ export const Dashboard: React.FC = () => {
               catCount = items.length;
             }
 
+            const staffFixTotal =
+              cat.id === 'staff'
+                ? (selectedMonthData.staffList || []).reduce(
+                    (sum, item) => sum + (Number(item.fixAmount) || 0),
+                    0
+                  )
+                : 0;
+
             const percentage =
               summary.totalExpense > 0
                 ? Math.round((catAmount / summary.totalExpense) * 100)
@@ -220,14 +244,14 @@ export const Dashboard: React.FC = () => {
               <div
                 key={cat.id}
                 onClick={() => setCurrentTab(cat.id)}
-                className="bg-cream p-3.5 sm:p-4 rounded-card border border-border-warm shadow-warm-sm hover:shadow-warm-md hover:border-caramel/40 transition-all cursor-pointer group flex flex-col justify-between gap-2.5"
+                className="bg-cream p-4 sm:p-5 rounded-card border border-border-warm shadow-warm-sm hover:shadow-warm-md hover:border-caramel/40 transition-all cursor-pointer group flex flex-col justify-between gap-3.5"
               >
-                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-xl bg-coffee text-cream flex items-center justify-center shadow-sm flex-shrink-0">
                     <Icon className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h4 className="text-sm font-bold text-coffee group-hover:text-coffee-dark truncate leading-tight">
+                    <h4 className="text-sm sm:text-base font-bold text-coffee group-hover:text-coffee-dark truncate leading-tight">
                       {cat.name}
                     </h4>
                     <span className="text-[11px] sm:text-xs text-caramel font-medium">
@@ -237,11 +261,18 @@ export const Dashboard: React.FC = () => {
                   <ArrowRight className="hidden sm:block w-4 h-4 text-caramel group-hover:text-coffee group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                 </div>
 
-                <div className="flex items-end justify-between gap-1 pt-2.5 border-t border-border-warm/60">
-                  <span className="text-[11px] sm:text-xs text-caramel font-semibold">{percentage}%</span>
-                  <span className="text-lg font-bold text-expense-red leading-none break-words text-right">
-                    {formatINR(catAmount)}
-                  </span>
+                <div className="flex items-end justify-between gap-1 pt-3 border-t border-border-warm/60">
+                  <span className="text-xs sm:text-sm text-caramel font-semibold">{percentage}%</span>
+                  <div className="flex flex-col items-end gap-0.5">
+                    {cat.id === 'staff' && staffFixTotal > 0 && (
+                      <span className="text-[11px] sm:text-xs text-caramel font-semibold leading-none">
+                        Fix: {formatINR(staffFixTotal)}
+                      </span>
+                    )}
+                    <span className="text-lg sm:text-xl font-bold text-expense-red leading-none break-words text-right">
+                      {formatINR(catAmount)}
+                    </span>
+                  </div>
                 </div>
               </div>
             );
@@ -250,37 +281,37 @@ export const Dashboard: React.FC = () => {
       </section>
 
       {/* 4. EXPENSE DISTRIBUTION CHART & INSIGHT */}
-      <section aria-label="Visual Overview" className="order-3 md:order-4 bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm">
-        <div className="flex items-center justify-between mb-3">
+      <section aria-label="Visual Overview" className="order-3 md:order-4 bg-cream rounded-card p-5 sm:p-6 lg:p-7 border border-border-warm shadow-warm-sm">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h4 className="text-sm font-bold text-coffee">Category Distribution</h4>
-            <p className="text-xs text-caramel">Visual share of total monthly expense</p>
+            <h4 className="text-base sm:text-lg font-bold text-coffee">Category Distribution</h4>
+            <p className="text-xs sm:text-sm text-caramel">Visual share of total monthly expense</p>
           </div>
           <button
             onClick={() => setCurrentTab('reports')}
-            className="text-xs font-semibold text-coffee hover:text-expense-red flex items-center gap-1 transition-colors"
+            className="text-xs sm:text-sm font-semibold text-coffee hover:text-expense-red flex items-center gap-1.5 transition-colors"
           >
             <span>Full Report</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
         {chartData.length === 0 ? (
-          <div className="py-8 text-center text-xs text-caramel">
+          <div className="py-12 text-center text-sm text-caramel">
             No expenses recorded for {selectedMonthData.monthName}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
             {/* Donut Chart */}
-            <div className="h-56 w-full flex items-center justify-center">
+            <div className="lg:col-span-5 h-64 xl:h-72 w-full flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={chartData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={55}
-                    outerRadius={80}
+                    innerRadius={65}
+                    outerRadius={95}
                     paddingAngle={3}
                     dataKey="value"
                   >
@@ -291,12 +322,17 @@ export const Dashboard: React.FC = () => {
                   <Tooltip
                     formatter={(val: number) => [formatINR(val), 'Amount']}
                     contentStyle={{
-                      backgroundColor: '#FFF6ED',
-                      borderColor: '#E8D5C4',
+                      backgroundColor: isDark ? '#281A12' : '#FFF6ED',
+                      borderColor: isDark ? '#63442F' : '#E8D5C4',
                       borderRadius: '12px',
-                      color: '#3B2314',
+                      color: isDark ? '#F5EBE0' : '#3B2314',
                       fontWeight: '600',
-                      boxShadow: '0 4px 12px rgba(59, 35, 20, 0.08)',
+                      boxShadow: isDark
+                        ? '0 10px 25px -4px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(245, 235, 224, 0.15)'
+                        : '0 4px 12px rgba(59, 35, 20, 0.08)',
+                    }}
+                    itemStyle={{
+                      color: isDark ? '#F5EBE0' : '#3B2314',
                     }}
                   />
                 </PieChart>
@@ -304,7 +340,7 @@ export const Dashboard: React.FC = () => {
             </div>
 
             {/* Custom Legend */}
-            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-72 overflow-y-auto pr-1">
               {chartData.map((item, idx) => {
                 const pct =
                   summary.totalExpense > 0
@@ -314,11 +350,11 @@ export const Dashboard: React.FC = () => {
                 return (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-2 rounded-btn bg-warm-beige/40 text-xs"
+                    className="flex items-center justify-between p-2.5 sm:p-3 rounded-btn bg-warm-beige/40 text-xs sm:text-sm"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span
-                        className="w-3 h-3 rounded-full flex-shrink-0"
+                        className="w-3.5 h-3.5 rounded-full flex-shrink-0"
                         style={{ backgroundColor: item.color }}
                       />
                       <span className="font-bold text-coffee truncate">{item.name}</span>

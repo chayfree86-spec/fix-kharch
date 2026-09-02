@@ -16,7 +16,7 @@ export const Sidebar: React.FC = () => {
   const enabledCategories = categories.filter(c => c.isEnabled);
 
   return (
-    <aside className="hidden md:flex flex-col w-64 lg:w-72 bg-cream border-r border-border-warm h-screen sticky top-0 p-4 lg:p-4.5 flex-shrink-0 justify-between">
+    <aside className="hidden md:flex flex-col w-64 lg:w-72 xl:w-80 bg-cream border-r border-border-warm h-screen sticky top-0 p-4 lg:p-5 xl:p-6 flex-shrink-0 justify-between">
       {/* Top section: Logo & Dynamic Nav */}
       <div className="flex-1 flex flex-col min-h-0">
         <div className="px-1 flex-shrink-0 pb-1.5">

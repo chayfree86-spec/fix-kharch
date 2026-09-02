@@ -19,8 +19,9 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { getCategoryIconComponent } from '../utils/categoryIcons';
+import { useTheme } from '../hooks/useTheme';
 
-const CHART_PALETTE = [
+const LIGHT_CHART_PALETTE = [
   '#3B2314',
   '#8B4A20',
   '#C62828',
@@ -32,8 +33,23 @@ const CHART_PALETTE = [
   '#D32F2F',
 ];
 
+const DARK_CHART_PALETTE = [
+  '#E2A572',
+  '#F06A5D',
+  '#D98544',
+  '#F49D5E',
+  '#B87A54',
+  '#FF856F',
+  '#D2A884',
+  '#F68576',
+  '#E5AF88',
+];
+
 export const ReportsScreen: React.FC = () => {
   const { summary, selectedMonthData, categories } = useApp();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const palette = isDark ? DARK_CHART_PALETTE : LIGHT_CHART_PALETTE;
 
   const enabledCategories = categories.filter(c => c.isEnabled);
 
@@ -52,7 +68,7 @@ export const ReportsScreen: React.FC = () => {
       id: cat.id,
       name: cat.name,
       value: catAmount,
-      color: CHART_PALETTE[idx % CHART_PALETTE.length],
+      color: palette[idx % palette.length],
       iconName: cat.icon,
     };
   });
@@ -68,7 +84,7 @@ export const ReportsScreen: React.FC = () => {
   }));
 
   return (
-    <div className="space-y-4 animate-fade-in pb-4">
+    <div className="space-y-4 pb-4">
       {/* Header */}
       <div className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -147,28 +163,28 @@ export const ReportsScreen: React.FC = () => {
       </div>
 
       {/* 2. Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6">
         {/* Category Share Donut Chart */}
-        <div className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm space-y-3">
+        <div className="bg-cream rounded-card p-5 sm:p-6 border border-border-warm shadow-warm-sm space-y-4">
           <div className="flex items-center gap-2 border-b border-border-warm/60 pb-3">
-            <PieIcon className="w-4 h-4 text-caramel" />
-            <h4 className="text-sm font-bold text-coffee uppercase tracking-wider">
+            <PieIcon className="w-5 h-5 text-caramel" />
+            <h4 className="text-sm sm:text-base font-bold text-coffee uppercase tracking-wider">
               Category Distribution
             </h4>
           </div>
 
           {activeCategoryData.length === 0 ? (
-            <div className="py-12 text-center text-xs text-caramel">No expense data available</div>
+            <div className="py-16 text-center text-sm text-caramel">No expense data available</div>
           ) : (
-            <div className="h-64 w-full">
+            <div className="h-72 xl:h-80 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={activeCategoryData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={85}
+                    innerRadius={70}
+                    outerRadius={100}
                     paddingAngle={3}
                     dataKey="value"
                   >
@@ -179,12 +195,17 @@ export const ReportsScreen: React.FC = () => {
                   <Tooltip
                     formatter={(val: number) => [formatINR(val), 'Amount']}
                     contentStyle={{
-                      backgroundColor: '#FFF6ED',
-                      borderColor: '#E8D5C4',
+                      backgroundColor: isDark ? '#281A12' : '#FFF6ED',
+                      borderColor: isDark ? '#63442F' : '#E8D5C4',
                       borderRadius: '12px',
-                      color: '#3B2314',
+                      color: isDark ? '#F5EBE0' : '#3B2314',
                       fontWeight: '600',
-                      boxShadow: '0 4px 12px rgba(59, 35, 20, 0.08)',
+                      boxShadow: isDark
+                        ? '0 10px 25px -4px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(245, 235, 224, 0.15)'
+                        : '0 4px 12px rgba(59, 35, 20, 0.08)',
+                    }}
+                    itemStyle={{
+                      color: isDark ? '#F5EBE0' : '#3B2314',
                     }}
                   />
                 </PieChart>
@@ -194,37 +215,47 @@ export const ReportsScreen: React.FC = () => {
         </div>
 
         {/* Category Comparison Bar Chart */}
-        <div className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm space-y-3">
+        <div className="bg-cream rounded-card p-5 sm:p-6 border border-border-warm shadow-warm-sm space-y-4">
           <div className="flex items-center gap-2 border-b border-border-warm/60 pb-3">
-            <BarChart3 className="w-4 h-4 text-caramel" />
-            <h4 className="text-sm font-bold text-coffee uppercase tracking-wider">
+            <BarChart3 className="w-5 h-5 text-caramel" />
+            <h4 className="text-sm sm:text-base font-bold text-coffee uppercase tracking-wider">
               Category Comparison
             </h4>
           </div>
 
-          <div className="h-64 w-full">
+          <div className="h-72 xl:h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={comparisonData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E8D5C4" opacity={0.6} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isDark ? '#4A3323' : '#E8D5C4'}
+                  opacity={isDark ? 0.4 : 0.6}
+                />
                 <XAxis
                   dataKey="category"
-                  tick={{ fill: '#8B4A20', fontSize: 11, fontWeight: 600 }}
-                  axisLine={{ stroke: '#E8D5C4' }}
+                  tick={{ fill: isDark ? '#DCB28C' : '#8B4A20', fontSize: 11, fontWeight: 600 }}
+                  axisLine={{ stroke: isDark ? '#5C3E2A' : '#E8D5C4' }}
                 />
                 <YAxis
-                  tick={{ fill: '#8B4A20', fontSize: 11 }}
-                  axisLine={{ stroke: '#E8D5C4' }}
+                  tick={{ fill: isDark ? '#DCB28C' : '#8B4A20', fontSize: 11 }}
+                  axisLine={{ stroke: isDark ? '#5C3E2A' : '#E8D5C4' }}
                   tickFormatter={val => `₹${val / 1000}k`}
                 />
                 <Tooltip
                   formatter={(val: number) => [formatINR(val), 'Expense']}
                   labelFormatter={label => `Category: ${label}`}
                   contentStyle={{
-                    backgroundColor: '#FFF6ED',
-                    borderColor: '#E8D5C4',
+                    backgroundColor: isDark ? '#281A12' : '#FFF6ED',
+                    borderColor: isDark ? '#63442F' : '#E8D5C4',
                     borderRadius: '12px',
-                    color: '#3B2314',
+                    color: isDark ? '#F5EBE0' : '#3B2314',
                     fontWeight: '600',
+                    boxShadow: isDark
+                      ? '0 10px 25px -4px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(245, 235, 224, 0.15)'
+                      : '0 4px 12px rgba(59, 35, 20, 0.08)',
+                  }}
+                  itemStyle={{
+                    color: isDark ? '#F5EBE0' : '#3B2314',
                   }}
                 />
                 <Bar dataKey="amount" radius={[8, 8, 0, 0]}>

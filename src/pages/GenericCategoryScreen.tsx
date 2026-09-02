@@ -197,7 +197,7 @@ export const GenericCategoryScreen: React.FC<GenericCategoryScreenProps> = ({ ca
   };
 
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div className="space-y-4">
       {/* Header Banner */}
       <div className="bg-cream rounded-card p-4 sm:p-5 border border-border-warm shadow-warm-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
