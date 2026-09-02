@@ -23,6 +23,7 @@ import { Modal } from '../components/ui/Modal';
 import { Logo } from '../components/ui/Logo';
 import { ExpenseCategory } from '../types';
 import { AVAILABLE_ICONS, getCategoryIconComponent } from '../utils/categoryIcons';
+import { formatINR } from '../utils/currency';
 import { clearAllAppCacheAndReload } from '../utils/autoUpdater';
 
 export const SettingsScreen: React.FC = () => {
@@ -69,8 +70,8 @@ export const SettingsScreen: React.FC = () => {
   }, [settings.cafeName, settings.staffBusinessId]);
 
   React.useEffect(() => {
-    setBudget(selectedMonthData.budget);
-  }, [selectedMonthData.budget, selectedMonthData.monthKey]);
+    setBudget(summary.budget);
+  }, [summary.budget, selectedMonthData.monthKey]);
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -330,7 +331,7 @@ export const SettingsScreen: React.FC = () => {
               value={budget}
               onChange={setBudget}
               placeholder="0"
-              helperText={`Current target budget for ${selectedMonthData.monthName}`}
+              helperText={`Auto-calculated from all active categories (${formatINR(summary.totalExpense)})`}
             />
 
             <div className="flex flex-col gap-1.5">

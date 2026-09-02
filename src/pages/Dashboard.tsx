@@ -83,7 +83,7 @@ export const Dashboard: React.FC = () => {
               {formatINR(summary.budget)}
             </div>
             <p className="text-[11px] sm:text-xs text-caramel mt-1 font-medium">
-              Monthly planned expense limit
+              Auto-calculated ({enabledCategories.length} active categories)
             </p>
           </div>
         </div>
@@ -263,15 +263,21 @@ export const Dashboard: React.FC = () => {
 
                 <div className="flex items-end justify-between gap-1 pt-3 border-t border-border-warm/60">
                   <span className="text-xs sm:text-sm text-caramel font-semibold">{percentage}%</span>
-                  <div className="flex flex-col items-end gap-0.5">
-                    {cat.id === 'staff' && staffFixTotal > 0 && (
-                      <span className="text-[11px] sm:text-xs text-caramel font-semibold leading-none">
-                        Fix: {formatINR(staffFixTotal)}
+                  <div className="flex flex-col items-end gap-1">
+                    {cat.id === 'staff' && staffFixTotal > 0 ? (
+                      <>
+                        <span className="text-[11px] sm:text-xs text-caramel font-semibold leading-none">
+                          Counted: {formatINR(catAmount)}
+                        </span>
+                        <span className="text-lg sm:text-xl font-bold text-expense-red leading-none break-words text-right">
+                          {formatINR(staffFixTotal)}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-lg sm:text-xl font-bold text-expense-red leading-none break-words text-right">
+                        {formatINR(catAmount)}
                       </span>
                     )}
-                    <span className="text-lg sm:text-xl font-bold text-expense-red leading-none break-words text-right">
-                      {formatINR(catAmount)}
-                    </span>
                   </div>
                 </div>
               </div>
