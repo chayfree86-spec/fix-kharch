@@ -83,4 +83,19 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    target: 'es2020',
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 650,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-charts': ['recharts'],
+          'vendor-motion': ['motion'],
+          'vendor-icons': ['lucide-react'],
+        },
+      },
+    },
+  },
 });
