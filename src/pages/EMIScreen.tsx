@@ -166,7 +166,7 @@ export const EMIScreen: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleOpenEdit(emi)}
-                    className="w-7 h-7 rounded-btn bg-warm-beige hover:bg-warm-beige-dark text-coffee flex items-center justify-center transition-colors"
+                    className="w-9 h-9 rounded-btn bg-warm-beige hover:bg-warm-beige-dark text-coffee flex items-center justify-center transition-colors"
                     aria-label={`Edit ${emi.name}`}
                   >
                     <Pencil className="w-3 h-3" />
@@ -174,7 +174,7 @@ export const EMIScreen: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handlePromptDelete(emi)}
-                    className="w-7 h-7 rounded-btn bg-warm-beige hover:bg-expense-red-50 text-expense-red flex items-center justify-center transition-colors"
+                    className="w-9 h-9 rounded-btn bg-warm-beige hover:bg-expense-red-50 text-expense-red flex items-center justify-center transition-colors"
                     aria-label={`Delete ${emi.name}`}
                   >
                     <Trash2 className="w-3 h-3" />

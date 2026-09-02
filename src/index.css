@@ -7,11 +7,26 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  html {
+    /* Use the dynamic viewport height so mobile browser chrome (URL bar)
+       showing/hiding never clips or shifts the app shell. */
+    height: 100%;
+    overscroll-behavior-y: none;
+  }
+
   body {
     background-color: #F5E6D3;
     color: #3B2314;
     font-family: 'Poppins', sans-serif;
     overflow-x: hidden;
+    max-width: 100vw;
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
+
+  #root {
+    min-height: 100svh;
+    min-height: 100dvh;
   }
 
   /* Remove number input spinner arrows */
@@ -35,6 +50,19 @@
   }
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .min-h-dvh {
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
+  /* Belt-and-braces guard: nothing in the app shell should ever be able to
+     force horizontal scroll on narrow devices. */
+  .no-x-overflow {
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 }
 

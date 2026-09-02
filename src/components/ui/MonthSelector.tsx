@@ -4,7 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { Modal } from './Modal';
 
 export const MonthSelector: React.FC = () => {
-  const { selectedMonthData, nextMonth, prevMonth, setMonth, selectedMonthKey } = useApp();
+  const { nextMonth, prevMonth, setMonth, selectedMonthKey } = useApp();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   // Parse current year & month
@@ -28,6 +28,7 @@ export const MonthSelector: React.FC = () => {
   ];
 
   const [pickerYear, setPickerYear] = useState(selectedYear);
+  const shortMonthLabel = `${months.find(m => m.num === selectedMonth)?.name || ''} ${selectedYear}`;
 
   const handleSelectMonth = (monthNum: number) => {
     const key = `${pickerYear}-${monthNum.toString().padStart(2, '0')}`;
@@ -37,13 +38,13 @@ export const MonthSelector: React.FC = () => {
 
   return (
     <>
-      <div className="flex items-center justify-between bg-cream px-2 py-1.5 rounded-card border border-border-warm shadow-warm-sm">
+      <div className="flex items-center justify-between bg-cream px-1 sm:px-2 py-1 sm:py-1.5 rounded-card border border-border-warm shadow-warm-sm">
         <button
           onClick={prevMonth}
           aria-label="Previous Month"
-          className="w-9 h-9 rounded-btn flex items-center justify-center text-coffee hover:bg-warm-beige/80 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-coffee/20"
+          className="w-8 h-8 sm:w-9 sm:h-9 rounded-btn flex items-center justify-center text-coffee hover:bg-warm-beige/80 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-coffee/20 flex-shrink-0"
         >
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         <button
@@ -51,18 +52,18 @@ export const MonthSelector: React.FC = () => {
             setPickerYear(selectedYear);
             setIsPickerOpen(true);
           }}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-btn hover:bg-warm-beige/50 text-coffee transition-colors font-semibold text-sm sm:text-base focus:outline-none"
+          className="flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-3 py-1.5 rounded-btn hover:bg-warm-beige/50 text-coffee transition-colors font-semibold text-xs sm:text-base focus:outline-none min-w-0"
         >
-          <Calendar className="w-4 h-4 text-caramel" />
-          <span>{selectedMonthData.monthName}</span>
+          <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-caramel flex-shrink-0" />
+          <span className="whitespace-nowrap">{shortMonthLabel}</span>
         </button>
 
         <button
           onClick={nextMonth}
           aria-label="Next Month"
-          className="w-9 h-9 rounded-btn flex items-center justify-center text-coffee hover:bg-warm-beige/80 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-coffee/20"
+          className="w-8 h-8 sm:w-9 sm:h-9 rounded-btn flex items-center justify-center text-coffee hover:bg-warm-beige/80 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-coffee/20 flex-shrink-0"
         >
-          <ChevronRight className="w-5 h-5" />
+          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </div>
 

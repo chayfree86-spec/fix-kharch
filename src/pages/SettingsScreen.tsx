@@ -258,7 +258,7 @@ export const SettingsScreen: React.FC = () => {
                     onClick={() => toggleCategory(cat.id)}
                     title={cat.isEnabled ? 'Disable Category (Hide from Menu)' : 'Enable Category (Show in Menu)'}
                     aria-label={cat.isEnabled ? 'Disable Category' : 'Enable Category'}
-                    className={`w-8 h-8 rounded-btn flex items-center justify-center transition-colors ${
+                    className={`w-9 h-9 rounded-btn flex items-center justify-center transition-colors ${
                       cat.isEnabled
                         ? 'bg-warm-beige text-coffee hover:bg-warm-beige-dark'
                         : 'bg-warm-beige/60 text-coffee/40 hover:bg-warm-beige'
@@ -273,7 +273,7 @@ export const SettingsScreen: React.FC = () => {
                     onClick={() => handleOpenEditCategory(cat)}
                     title="Edit Category"
                     aria-label="Edit Category"
-                    className="w-8 h-8 rounded-btn bg-warm-beige hover:bg-warm-beige-dark text-coffee flex items-center justify-center transition-colors"
+                    className="w-9 h-9 rounded-btn bg-warm-beige hover:bg-warm-beige-dark text-coffee flex items-center justify-center transition-colors"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
@@ -285,7 +285,7 @@ export const SettingsScreen: React.FC = () => {
                       onClick={() => handlePromptDeleteCategory(cat)}
                       title="Delete Category"
                       aria-label="Delete Category"
-                      className="w-8 h-8 rounded-btn bg-warm-beige hover:bg-expense-red-50 text-expense-red flex items-center justify-center transition-colors"
+                      className="w-9 h-9 rounded-btn bg-warm-beige hover:bg-expense-red-50 text-expense-red flex items-center justify-center transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

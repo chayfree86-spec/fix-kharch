@@ -284,7 +284,7 @@ export const GenericCategoryScreen: React.FC<GenericCategoryScreenProps> = ({ ca
                     <button
                       type="button"
                       onClick={() => handleOpenEdit(item)}
-                      className="w-8 h-8 rounded-btn bg-warm-beige hover:bg-warm-beige-dark text-coffee flex items-center justify-center transition-colors"
+                      className="w-9 h-9 rounded-btn bg-warm-beige hover:bg-warm-beige-dark text-coffee flex items-center justify-center transition-colors"
                       aria-label={`Edit ${item.name}`}
                     >
                       <Pencil className="w-3.5 h-3.5" />
@@ -292,7 +292,7 @@ export const GenericCategoryScreen: React.FC<GenericCategoryScreenProps> = ({ ca
                     <button
                       type="button"
                       onClick={() => handlePromptDelete(item)}
-                      className="w-8 h-8 rounded-btn bg-warm-beige hover:bg-expense-red-50 text-expense-red flex items-center justify-center transition-colors"
+                      className="w-9 h-9 rounded-btn bg-warm-beige hover:bg-expense-red-50 text-expense-red flex items-center justify-center transition-colors"
                       aria-label={`Delete ${item.name}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -390,7 +390,7 @@ export const GenericCategoryScreen: React.FC<GenericCategoryScreenProps> = ({ ca
                           onClick={() => handleOpenEdit(item)}
                           title={`Edit ${item.name}`}
                           aria-label={`Edit ${item.name}`}
-                          className="w-8 h-8 rounded-btn bg-warm-beige hover:bg-warm-beige-dark text-coffee flex items-center justify-center transition-colors"
+                          className="w-9 h-9 rounded-btn bg-warm-beige hover:bg-warm-beige-dark text-coffee flex items-center justify-center transition-colors"
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
@@ -399,7 +399,7 @@ export const GenericCategoryScreen: React.FC<GenericCategoryScreenProps> = ({ ca
                           onClick={() => handlePromptDelete(item)}
                           title={`Delete ${item.name}`}
                           aria-label={`Delete ${item.name}`}
-                          className="w-8 h-8 rounded-btn bg-warm-beige hover:bg-expense-red-50 text-expense-red flex items-center justify-center transition-colors"
+                          className="w-9 h-9 rounded-btn bg-warm-beige hover:bg-expense-red-50 text-expense-red flex items-center justify-center transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

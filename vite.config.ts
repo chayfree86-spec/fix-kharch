@@ -14,6 +14,17 @@ export default defineConfig({
     strictPort: true,
     host: true,
     headers: noCacheHeaders,
+    // Local dev talks to the LIVE backend without CORS/cookie headaches: the
+    // browser calls same-origin /api, and Vite forwards it to production.
+    // Because the browser only ever sees localhost, no CORS is triggered and
+    // the session cookie is stored/sent as a normal same-site cookie.
+    proxy: {
+      '/api': {
+        target: 'https://fix.chaychaupal.com',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   preview: {
     port: 5180,

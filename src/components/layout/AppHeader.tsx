@@ -7,13 +7,17 @@ import {
   ReceiptText,
   ChartNoAxesCombined,
   Settings,
+  ChevronLeft,
 } from 'lucide-react';
 import { MonthSelector } from '../ui/MonthSelector';
 import { useApp } from '../../context/AppContext';
 import { getCategoryIconComponent } from '../../utils/categoryIcons';
 
+// Screens reachable directly from the mobile bottom nav — no back button needed.
+const PRIMARY_MOBILE_TABS = new Set(['dashboard', 'shop', 'reports']);
+
 export const AppHeader: React.FC = () => {
-  const { currentTab, categories } = useApp();
+  const { currentTab, setCurrentTab, categories } = useApp();
 
   const getPageInfo = () => {
     switch (currentTab) {
@@ -46,12 +50,25 @@ export const AppHeader: React.FC = () => {
   };
 
   const { title, subtitle, icon: Icon } = getPageInfo();
+  const showBack = !PRIMARY_MOBILE_TABS.has(currentTab);
 
   return (
-    <header className="sticky top-0 z-30 bg-warm-beige/95 backdrop-blur-md border-b border-border-warm/70 px-4 py-3 sm:px-6">
-      <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+    <header className="sticky top-0 z-30 bg-warm-beige/95 backdrop-blur-md border-b border-border-warm/70 safe-top">
+      <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 px-2.5 py-2.5 sm:px-6 sm:py-3">
         {/* Page Title & Breadcrumb Icon */}
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+          {/* Mobile back button — only on screens not reachable from the bottom nav directly */}
+          {showBack && (
+            <button
+              type="button"
+              onClick={() => setCurrentTab('dashboard')}
+              aria-label="Back"
+              className="md:hidden w-9 h-9 -ml-1 rounded-full flex items-center justify-center text-coffee active:bg-warm-beige-dark active:scale-95 transition-all flex-shrink-0"
+            >
+              <ChevronLeft className="w-5 h-5 stroke-[2.4]" />
+            </button>
+          )}
+
           <div className="w-9 h-9 rounded-xl bg-cream border border-border-warm text-coffee flex items-center justify-center shadow-sm flex-shrink-0">
             <Icon className="w-5 h-5" />
           </div>
