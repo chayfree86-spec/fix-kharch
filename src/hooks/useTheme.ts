@@ -43,6 +43,42 @@ function notifyThemeChange(newTheme: Theme) {
   themeListeners.forEach(fn => fn(newTheme));
 }
 
+/**
+ * Executes a cinematic Sunset / Sunrise top-to-bottom curtain wipe transition
+ * using modern browser View Transitions API with graceful fallback.
+ */
+function transitionToTheme(targetTheme: Theme) {
+  const isCurrentlyDark =
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  const activeCurrent: Theme = isCurrentlyDark ? 'dark' : 'light';
+
+  if (activeCurrent === targetTheme) return;
+
+  // 'sunrise' (Dark -> Light) or 'sunset' (Light -> Dark)
+  const transitionType = targetTheme === 'light' ? 'sunrise' : 'sunset';
+
+  if (
+    typeof document !== 'undefined' &&
+    'startViewTransition' in document &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) {
+    document.documentElement.setAttribute('data-theme-transition', transitionType);
+    const transition = (document as any).startViewTransition(() => {
+      notifyThemeChange(targetTheme);
+    });
+
+    transition.finished
+      .finally(() => {
+        document.documentElement.removeAttribute('data-theme-transition');
+      })
+      .catch(() => {
+        document.documentElement.removeAttribute('data-theme-transition');
+      });
+  } else {
+    notifyThemeChange(targetTheme);
+  }
+}
+
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) {
@@ -71,13 +107,14 @@ export function useTheme() {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    const isCurrentlyDark = document.documentElement.classList.contains('dark');
+    const isCurrentlyDark =
+      typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
     const nextTheme: Theme = isCurrentlyDark ? 'light' : 'dark';
-    notifyThemeChange(nextTheme);
+    transitionToTheme(nextTheme);
   }, []);
 
   const setExplicitTheme = useCallback((newTheme: Theme) => {
-    notifyThemeChange(newTheme);
+    transitionToTheme(newTheme);
   }, []);
 
   return { theme, toggleTheme, setTheme: setExplicitTheme };
