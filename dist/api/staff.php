@@ -42,9 +42,9 @@ if ($method === 'GET') {
     }
 
     $staff = array_map(static function (array $s) use ($saved): array {
-        $manualAmount = $saved[$s['id']] ?? null;
-        // If manually edited in fix-kharch, use that; otherwise default to netPayable from Staff-app!
-        $countedAmount = $manualAmount !== null ? (int) $manualAmount : (int) ($s['netPayable'] ?? 0);
+        // "Amount (Counted)" is a manual entry — it stays empty until the user
+        // fills it, and is NOT auto-populated from netPayable.
+        $countedAmount = (int) ($saved[$s['id']] ?? 0);
 
         return [
             'id' => (string) $s['id'],           // Staff-app staff id
