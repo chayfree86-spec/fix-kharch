@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   ChartNoAxesCombined,
   Settings,
+  HandCoins,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Logo } from '../ui/Logo';
@@ -115,6 +116,23 @@ export const Sidebar: React.FC = () => {
                 className={`w-5 h-5 ${currentTab === 'settings' ? 'text-cream' : 'text-caramel'}`}
               />
               <span>Settings</span>
+            </div>
+          </button>
+
+          {/* Partner Income */}
+          <button
+            onClick={() => setCurrentTab('partner_income')}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-btn text-sm font-semibold transition-all ${
+              currentTab === 'partner_income'
+                ? 'bg-coffee text-cream shadow-warm-sm'
+                : 'text-coffee/80 hover:bg-warm-beige/60 hover:text-coffee'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <HandCoins
+                className={`w-5 h-5 ${currentTab === 'partner_income' ? 'text-cream' : 'text-caramel'}`}
+              />
+              <span>Partner Income</span>
             </div>
           </button>
         </nav>

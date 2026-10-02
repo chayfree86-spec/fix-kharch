@@ -233,6 +233,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Load a month's data (budget + expenses + staff) from the API.
   const loadMonth = useCallback(async (monthKey: string, silent: boolean = false) => {
+    if (!monthKey || monthKey === 'ALL') return;
     // If silent (background sync) or already cached, do not lock UI with full screen loader
     if (!silent && !monthsDataRef.current[monthKey]) {
       setMonthLoading(true);

@@ -7,6 +7,7 @@ interface EmptyStateProps {
   description: string;
   actionText?: string;
   onAction?: () => void;
+  actionVariant?: 'primary' | 'expense';
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
@@ -15,6 +16,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   description,
   actionText,
   onAction,
+  actionVariant = 'expense',
 }) => {
   return (
     <div className="flex flex-col items-center justify-center p-8 bg-cream/70 rounded-card border border-dashed border-border-warm text-center my-4">
@@ -27,7 +29,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         <button
           type="button"
           onClick={onAction}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-expense-red hover:bg-expense-red-dark text-cream rounded-btn font-semibold text-xs transition-all shadow-warm-sm active:scale-95"
+          className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-btn font-semibold text-xs transition-all shadow-warm-sm active:scale-95 text-cream ${
+            actionVariant === 'primary'
+              ? 'bg-coffee hover:bg-coffee/90'
+              : 'bg-expense-red hover:bg-expense-red-dark'
+          }`}
         >
           <Plus className="w-4 h-4" />
           <span>{actionText}</span>

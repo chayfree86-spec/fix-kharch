@@ -13,6 +13,7 @@ import { OtherExpensesScreen } from './pages/OtherExpensesScreen';
 import { GenericCategoryScreen } from './pages/GenericCategoryScreen';
 import { ReportsScreen } from './pages/ReportsScreen';
 import { SettingsScreen } from './pages/SettingsScreen';
+import { PartnerIncomeScreen } from './pages/PartnerIncomeScreen';
 import { PageMaskTransition } from './components/ui/PageMaskTransition';
 
 const MainContent: React.FC = () => {
@@ -29,6 +30,8 @@ const MainContent: React.FC = () => {
     switch (currentTab) {
       case 'dashboard':
         return <Dashboard />;
+      case 'partner_income':
+        return <PartnerIncomeScreen />;
       case 'staff':
         return <StaffScreen />;
       case 'emi':

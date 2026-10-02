@@ -39,6 +39,11 @@
   --c-accent-red-dark: 198 40 40;
   --c-accent-red-light: 239 83 80;
   --c-border-warm: 229 211 193;
+  --c-income-green: 22 138 68;
+  --c-income-green-dark: 18 112 55;
+  --c-income-green-light: 34 160 82;
+  --c-income-green-50: 236 250 242;
+  --c-income-green-100: 212 242 225;
 }
 
 .dark {
@@ -73,6 +78,11 @@
   --c-accent-red-dark: 238 72 67;
   --c-accent-red-light: 250 142 138;
   --c-border-warm: 68 47 33;      /* 3D dark coffee border */
+  --c-income-green: 74 196 142;   /* theme-matched fresh sage/emerald for dark coffee */
+  --c-income-green-dark: 50 168 118;
+  --c-income-green-light: 105 215 168;
+  --c-income-green-50: 22 48 36;
+  --c-income-green-100: 32 70 52;
 }
 
 @layer base {

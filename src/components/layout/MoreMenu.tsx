@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, Settings, ChartNoAxesCombined } from 'lucide-react';
+import { ChevronRight, Settings, ChartNoAxesCombined, HandCoins } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { useApp } from '../../context/AppContext';
 import { getCategoryIconComponent } from '../../utils/categoryIcons';
@@ -74,6 +74,14 @@ export const MoreMenu: React.FC<MoreMenuProps> = ({ isOpen, onClose }) => {
           title="Settings"
           subtitle="Café profile, budget & categories"
           onClick={() => go('settings')}
+        />
+
+        {/* Partner Income */}
+        <Row
+          icon={HandCoins}
+          title="Partner Income"
+          subtitle="Daal Roti & Chay Chaupal partners"
+          onClick={() => go('partner_income')}
         />
       </div>
     </Modal>

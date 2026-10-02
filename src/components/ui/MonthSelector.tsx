@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Layers } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from './Modal';
+import { getCurrentMonthKey } from '../../data/mockData';
 
 export const MonthSelector: React.FC = () => {
   const { nextMonth, prevMonth, setMonth, selectedMonthKey } = useApp();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
+  const isAll = selectedMonthKey === 'ALL';
+  const currentMonthKey = getCurrentMonthKey();
+  const [nowY, nowM] = currentMonthKey.split('-').map(Number);
+
   // Parse current year & month
-  const [currentYearStr, currentMonthStr] = selectedMonthKey.split('-');
-  const selectedYear = parseInt(currentYearStr, 10);
-  const selectedMonth = parseInt(currentMonthStr, 10);
+  let selectedYear = nowY;
+  let selectedMonth = nowM;
+  if (!isAll && selectedMonthKey && selectedMonthKey.includes('-')) {
+    const parts = selectedMonthKey.split('-').map(Number);
+    if (parts[0] && parts[1]) {
+      selectedYear = parts[0];
+      selectedMonth = parts[1];
+    }
+  }
 
   const months = [
     { num: 1, name: 'Jan', fullName: 'January' },
@@ -28,11 +39,24 @@ export const MonthSelector: React.FC = () => {
   ];
 
   const [pickerYear, setPickerYear] = useState(selectedYear);
-  const shortMonthLabel = `${months.find(m => m.num === selectedMonth)?.name || ''} ${selectedYear}`;
+
+  const shortMonthLabel = isAll
+    ? 'All Months'
+    : `${months.find(m => m.num === selectedMonth)?.name || ''} ${selectedYear}`;
 
   const handleSelectMonth = (monthNum: number) => {
     const key = `${pickerYear}-${monthNum.toString().padStart(2, '0')}`;
     setMonth(key);
+    setIsPickerOpen(false);
+  };
+
+  const handleSelectAll = () => {
+    setMonth('ALL');
+    setIsPickerOpen(false);
+  };
+
+  const handleSelectCurrentMonth = () => {
+    setMonth(currentMonthKey);
     setIsPickerOpen(false);
   };
 
@@ -54,7 +78,11 @@ export const MonthSelector: React.FC = () => {
           }}
           className="flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-3 py-1.5 rounded-btn hover:bg-warm-beige/50 text-coffee transition-colors font-semibold text-xs sm:text-base focus:outline-none min-w-0"
         >
-          <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-caramel flex-shrink-0" />
+          {isAll ? (
+            <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-caramel flex-shrink-0" />
+          ) : (
+            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-caramel flex-shrink-0" />
+          )}
           <span className="whitespace-nowrap">{shortMonthLabel}</span>
         </button>
 
@@ -71,16 +99,49 @@ export const MonthSelector: React.FC = () => {
       <Modal
         isOpen={isPickerOpen}
         onClose={() => setIsPickerOpen(false)}
-        title="Select Month"
-        subtitle="Choose month and year for expense records"
+        title="Select Time Period"
+        subtitle="Choose All Months or a custom month & year"
         maxWidth="sm"
       >
-        {/* Year Selector */}
-        <div className="flex items-center justify-between bg-warm-beige/60 p-2 rounded-btn mb-4">
+        {/* Quick Presets: All Months & This Month */}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <button
+            type="button"
+            onClick={handleSelectAll}
+            className={`py-2.5 px-3 rounded-btn text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              isAll
+                ? 'bg-coffee text-cream shadow-warm-sm ring-2 ring-coffee/20'
+                : 'bg-warm-beige/60 hover:bg-warm-beige text-coffee border border-border-warm/70'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5 text-caramel" />
+            <span>All Months</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSelectCurrentMonth}
+            className={`py-2.5 px-3 rounded-btn text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              !isAll && selectedMonthKey === currentMonthKey
+                ? 'bg-coffee text-cream shadow-warm-sm ring-2 ring-coffee/20'
+                : 'bg-warm-beige/60 hover:bg-warm-beige text-coffee border border-border-warm/70'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5 text-caramel" />
+            <span>This Month</span>
+          </button>
+        </div>
+
+        {/* Custom Month Header & Year Selector */}
+        <div className="text-xs font-bold uppercase tracking-wider text-caramel mb-2 flex items-center justify-between">
+          <span>Custom Month Selection</span>
+        </div>
+
+        <div className="flex items-center justify-between bg-warm-beige/60 p-2 rounded-btn mb-3">
           <button
             type="button"
             onClick={() => setPickerYear(prev => prev - 1)}
-            className="w-8 h-8 rounded-full bg-cream text-coffee flex items-center justify-center shadow-sm hover:bg-white"
+            className="w-8 h-8 rounded-full bg-cream text-coffee flex items-center justify-center shadow-sm hover:bg-white transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -88,7 +149,7 @@ export const MonthSelector: React.FC = () => {
           <button
             type="button"
             onClick={() => setPickerYear(prev => prev + 1)}
-            className="w-8 h-8 rounded-full bg-cream text-coffee flex items-center justify-center shadow-sm hover:bg-white"
+            className="w-8 h-8 rounded-full bg-cream text-coffee flex items-center justify-center shadow-sm hover:bg-white transition-colors"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -97,7 +158,7 @@ export const MonthSelector: React.FC = () => {
         {/* 12 Months Grid */}
         <div className="grid grid-cols-3 gap-2.5">
           {months.map(m => {
-            const isSelected = pickerYear === selectedYear && m.num === selectedMonth;
+            const isSelected = !isAll && pickerYear === selectedYear && m.num === selectedMonth;
             return (
               <button
                 key={m.num}

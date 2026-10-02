@@ -57,6 +57,13 @@ export default {
           light: withVar('accent-red-light'),
         },
         'border-warm': withVar('border-warm'),
+        'income-green': {
+          DEFAULT: withVar('income-green'),
+          dark: withVar('income-green-dark'),
+          light: withVar('income-green-light'),
+          50: withVar('income-green-50'),
+          100: withVar('income-green-100'),
+        },
       },
       fontFamily: {
         sans: ['Poppins', 'system-ui', '-apple-system', 'sans-serif'],

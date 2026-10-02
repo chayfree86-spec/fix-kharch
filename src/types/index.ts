@@ -67,4 +67,41 @@ export interface CafeSettings {
   staffBusinessId?: number | null; // Linked Staff-app business (source of staff)
 }
 
-export type TabType = string; // Supports 'dashboard' | 'reports' | 'settings' and any category.id
+export type TabType = string; // Supports 'dashboard' | 'reports' | 'settings' | 'partner_income' and any category.id
+
+export type PartnerGroup = 'daal_roti' | 'chay_chaupal';
+
+export type PaymentMode = 'Cash' | 'UPI' | 'Bank Transfer' | 'Cheque' | 'Other';
+
+export interface PartnerIncomeItem {
+  id: string;
+  monthKey: string;
+  partnerGroup: PartnerGroup;
+  totalAmount: number;
+  incomeDate: string; // YYYY-MM-DD
+  paymentMode: PaymentMode | string;
+  remarks?: string | null;
+  partner1Name: string;
+  partner1Amount: number;
+  partner2Name: string;
+  partner2Amount: number;
+  createdAt?: string;
+}
+
+export interface PartnerGroupSummary {
+  total: number;
+  partners: Record<string, number>;
+}
+
+export interface PartnerIncomeSummary {
+  daal_roti: PartnerGroupSummary;
+  chay_chaupal: PartnerGroupSummary;
+}
+
+export interface PartnerIncomeResponse {
+  ok: boolean;
+  month: string;
+  items: PartnerIncomeItem[];
+  summary: PartnerIncomeSummary;
+}
+

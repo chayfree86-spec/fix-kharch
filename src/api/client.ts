@@ -1,7 +1,9 @@
+import { PartnerIncomeItem, PartnerGroup, PartnerIncomeResponse, PartnerIncomeSummary } from '../types';
+
 // Thin fetch wrapper around the fix-kharch PHP API.
 // All requests send the session cookie (credentials: 'include').
 
-const BASE = (import.meta.env.VITE_API_BASE_URL || 'http://localhost/fix-kharch/api').replace(/\/$/, '');
+const BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
 
 export class ApiError extends Error {
   status: number;
@@ -160,4 +162,176 @@ export const api = {
     request<{ month: string; staff: ApiStaffItem[]; message?: string }>('staff.php', { query: { month } }),
   setStaffAmount: (payload: { month: string; staffId: string; amount: number; name: string; fixAmount: number }) =>
     request<{ staff: ApiStaffItem }>('staff.php', { method: 'PUT', body: payload }),
+
+  // --- Partner Income ---
+  listPartnerIncome: async (month: string, group?: string): Promise<PartnerIncomeResponse> => {
+    try {
+      const res = await request<PartnerIncomeResponse>('partner_income.php', { query: { month, group } });
+      if (res && res.ok) {
+        saveLocalPartnerData(month, res);
+        return res;
+      }
+    } catch {
+      // Endpoint not deployed to live server yet -> fallback to local storage
+    }
+    const local = getLocalPartnerData(month);
+    if (group) {
+      return {
+        ...local,
+        items: local.items.filter(i => i.partnerGroup === group),
+      };
+    }
+    return local;
+  },
+
+  addPartnerIncome: async (payload: {
+    month: string;
+    partnerGroup: PartnerGroup;
+    totalAmount: number;
+    incomeDate: string;
+    paymentMode: string;
+    remarks?: string | null;
+    partner1Name: string;
+    partner1Amount: number;
+    partner2Name: string;
+    partner2Amount: number;
+  }): Promise<{ ok: true; item: PartnerIncomeItem }> => {
+    try {
+      const res = await request<{ ok: true; item: PartnerIncomeItem }>('partner_income.php', {
+        method: 'POST',
+        body: payload,
+      });
+      if (res && res.ok) {
+        return res;
+      }
+    } catch {
+      // Fallback
+    }
+    const local = getLocalPartnerData(payload.month);
+    const newItem: PartnerIncomeItem = {
+      id: `local_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      monthKey: payload.month,
+      partnerGroup: payload.partnerGroup,
+      totalAmount: payload.totalAmount,
+      incomeDate: payload.incomeDate,
+      paymentMode: payload.paymentMode,
+      remarks: payload.remarks || null,
+      partner1Name: payload.partner1Name,
+      partner1Amount: payload.partner1Amount,
+      partner2Name: payload.partner2Name,
+      partner2Amount: payload.partner2Amount,
+      createdAt: new Date().toISOString(),
+    };
+    local.items.unshift(newItem);
+    local.summary = recalculateSummary(local.items);
+    saveLocalPartnerData(payload.month, local);
+    return { ok: true, item: newItem };
+  },
+
+  updatePartnerIncome: async (payload: {
+    id: string;
+    month: string;
+    partnerGroup?: PartnerGroup;
+    totalAmount?: number;
+    incomeDate?: string;
+    paymentMode?: string;
+    remarks?: string | null;
+    partner1Name?: string;
+    partner1Amount?: number;
+    partner2Name?: string;
+    partner2Amount?: number;
+  }): Promise<{ ok: true; item: PartnerIncomeItem }> => {
+    try {
+      const res = await request<{ ok: true; item: PartnerIncomeItem }>('partner_income.php', {
+        method: 'PUT',
+        body: payload,
+      });
+      if (res && res.ok) {
+        return res;
+      }
+    } catch {
+      // Fallback
+    }
+    const local = getLocalPartnerData(payload.month);
+    const idx = local.items.findIndex(i => i.id === payload.id);
+    if (idx !== -1) {
+      local.items[idx] = {
+        ...local.items[idx],
+        ...(payload.partnerGroup ? { partnerGroup: payload.partnerGroup } : {}),
+        ...(payload.totalAmount !== undefined ? { totalAmount: payload.totalAmount } : {}),
+        ...(payload.incomeDate ? { incomeDate: payload.incomeDate } : {}),
+        ...(payload.paymentMode ? { paymentMode: payload.paymentMode } : {}),
+        ...(payload.remarks !== undefined ? { remarks: payload.remarks } : {}),
+        ...(payload.partner1Name ? { partner1Name: payload.partner1Name } : {}),
+        ...(payload.partner1Amount !== undefined ? { partner1Amount: payload.partner1Amount } : {}),
+        ...(payload.partner2Name ? { partner2Name: payload.partner2Name } : {}),
+        ...(payload.partner2Amount !== undefined ? { partner2Amount: payload.partner2Amount } : {}),
+      };
+      local.summary = recalculateSummary(local.items);
+      saveLocalPartnerData(payload.month, local);
+      return { ok: true, item: local.items[idx] };
+    }
+    throw new ApiError('Item not found', 404);
+  },
+
+  deletePartnerIncome: async (id: string, month: string): Promise<{ ok: true }> => {
+    try {
+      const res = await request<{ ok: true }>('partner_income.php', {
+        method: 'DELETE',
+        body: { id },
+      });
+      if (res && res.ok) {
+        return res;
+      }
+    } catch {
+      // Fallback
+    }
+    const local = getLocalPartnerData(month);
+    local.items = local.items.filter(i => i.id !== id);
+    local.summary = recalculateSummary(local.items);
+    saveLocalPartnerData(month, local);
+    return { ok: true };
+  },
 };
+
+// Local storage fallback helpers for partner income
+function getLocalPartnerData(month: string): PartnerIncomeResponse {
+  try {
+    const raw = localStorage.getItem(`fix_partner_income_${month}`);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return {
+    ok: true,
+    month,
+    items: [],
+    summary: {
+      daal_roti: { total: 0, partners: { 'Vijender Prajapati': 0, 'Chay Chaupal': 0 } },
+      chay_chaupal: { total: 0, partners: { 'Sandeep': 0, 'Narender': 0 } },
+    },
+  };
+}
+
+function saveLocalPartnerData(month: string, data: PartnerIncomeResponse) {
+  try {
+    localStorage.setItem(`fix_partner_income_${month}`, JSON.stringify(data));
+  } catch {}
+}
+
+function recalculateSummary(items: PartnerIncomeItem[]): PartnerIncomeSummary {
+  const summary: PartnerIncomeSummary = {
+    daal_roti: { total: 0, partners: { 'Vijender Prajapati': 0, 'Chay Chaupal': 0 } },
+    chay_chaupal: { total: 0, partners: { 'Sandeep': 0, 'Narender': 0 } },
+  };
+  for (const item of items) {
+    const g = item.partnerGroup;
+    if (summary[g]) {
+      summary[g].total += item.totalAmount;
+      const p1 = item.partner1Name;
+      const p2 = item.partner2Name;
+      summary[g].partners[p1] = (summary[g].partners[p1] || 0) + item.partner1Amount;
+      summary[g].partners[p2] = (summary[g].partners[p2] || 0) + item.partner2Amount;
+    }
+  }
+  return summary;
+}
+

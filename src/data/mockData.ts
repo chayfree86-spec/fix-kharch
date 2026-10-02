@@ -60,12 +60,17 @@ export function getMonthKey(date: Date): string {
 
 /** Human-readable label, e.g. "September 2026", for a "YYYY-MM" key. */
 export function getMonthName(monthKey: string): string {
+  if (!monthKey || monthKey === 'ALL') return 'All Months';
   const [year, month] = monthKey.split('-').map(Number);
+  if (!month || !MONTH_NAMES[month - 1]) return monthKey;
   return `${MONTH_NAMES[month - 1]} ${year}`;
 }
 
 /** Shift a "YYYY-MM" key by a number of months (delta may be negative). */
 export function addMonthsToKey(monthKey: string, delta: number): string {
+  if (!monthKey || monthKey === 'ALL') {
+    return getMonthKey(new Date());
+  }
   const [year, month] = monthKey.split('-').map(Number);
   return getMonthKey(new Date(year, month - 1 + delta, 1));
 }
