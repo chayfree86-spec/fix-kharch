@@ -14,8 +14,6 @@ import {
   FileCheck2,
   Calendar,
   Split,
-  CheckCircle2,
-  ArrowRightLeft,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PartnerGroup, PartnerIncomeItem, PartnerIncomeSummary, PaymentMode } from '../types';
@@ -218,8 +216,11 @@ export const PartnerIncomeScreen: React.FC = () => {
     setFormPartner2Amount(formTotalAmount - half);
   };
 
-  // Open Add modal with defaults for active section
-  const handleOpenAdd = () => {
+  // Open Add modal with defaults for active section (or specified section)
+  const handleOpenAdd = (group?: PartnerGroup) => {
+    if (group && group !== activeGroup) {
+      setActiveGroup(group);
+    }
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -369,19 +370,26 @@ export const PartnerIncomeScreen: React.FC = () => {
         </div>
       </div>
 
-      {/* Section Switcher Tabs (Daal Roti vs Chay Chaupal) */}
+      {/* Section Switcher Tabs (Daal Roti vs Chay Chaupal) with Separate Add Income Buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-1.5 bg-warm-beige/40 rounded-card border border-border-warm">
-        {/* Daal Roti Tab */}
-        <button
-          type="button"
+        {/* Daal Roti Card */}
+        <div
+          role="button"
+          tabIndex={0}
           onClick={() => setActiveGroup('daal_roti')}
-          className={`flex items-center justify-between p-3.5 sm:p-4 rounded-btn transition-all text-left ${
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setActiveGroup('daal_roti');
+            }
+          }}
+          className={`flex items-center justify-between p-3 sm:p-4 rounded-btn transition-all text-left cursor-pointer select-none ${
             activeGroup === 'daal_roti'
               ? 'bg-coffee text-cream shadow-warm-md scale-[1.01]'
               : 'bg-cream text-coffee hover:bg-warm-beige/60 border border-border-warm/60'
           }`}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div
               className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                 activeGroup === 'daal_roti' ? 'bg-cream/20 text-cream' : 'bg-warm-beige text-coffee'
@@ -389,10 +397,10 @@ export const PartnerIncomeScreen: React.FC = () => {
             >
               <Building2 className="w-5 h-5" />
             </div>
-            <div>
-              <div className="font-bold text-sm sm:text-base">Daal Roti</div>
+            <div className="min-w-0">
+              <div className="font-bold text-sm sm:text-base truncate">Daal Roti</div>
               <div
-                className={`text-xs ${
+                className={`text-xs truncate ${
                   activeGroup === 'daal_roti' ? 'text-cream/80' : 'text-caramel'
                 }`}
               >
@@ -400,33 +408,61 @@ export const PartnerIncomeScreen: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="text-right">
-            <div
-              className={`text-xs uppercase tracking-wider font-semibold ${
-                activeGroup === 'daal_roti' ? 'text-cream/70' : 'text-caramel'
-              }`}
-            >
-              Total Income
-            </div>
-            <div className={`text-sm sm:text-base font-bold ${
-              activeGroup === 'daal_roti' ? 'text-income-green-light' : 'text-income-green'
-            }`}>
-              {formatINR(allGroupTotals.daal_roti || summary.daal_roti.total)}
-            </div>
-          </div>
-        </button>
 
-        {/* Chay Chaupal Tab */}
-        <button
-          type="button"
+          <div className="flex items-center gap-2.5 sm:gap-3.5 flex-shrink-0">
+            <div className="text-right">
+              <div
+                className={`text-[10px] sm:text-xs uppercase tracking-wider font-semibold ${
+                  activeGroup === 'daal_roti' ? 'text-cream/70' : 'text-caramel'
+                }`}
+              >
+                Total Income
+              </div>
+              <div className={`text-sm sm:text-base font-bold ${
+                activeGroup === 'daal_roti' ? 'text-income-green-light' : 'text-income-green'
+              }`}>
+                {formatINR(allGroupTotals.daal_roti || summary.daal_roti.total)}
+              </div>
+            </div>
+
+            {/* Separate Add Income Button for Daal Roti */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenAdd('daal_roti');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-btn font-bold text-xs transition-all shadow-warm-xs flex-shrink-0 active:scale-95 ${
+                activeGroup === 'daal_roti'
+                  ? 'bg-cream text-coffee hover:bg-white'
+                  : 'bg-coffee text-cream hover:bg-coffee/90'
+              }`}
+              title="Add Daal Roti Income"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Income</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Chay Chaupal Card */}
+        <div
+          role="button"
+          tabIndex={0}
           onClick={() => setActiveGroup('chay_chaupal')}
-          className={`flex items-center justify-between p-3.5 sm:p-4 rounded-btn transition-all text-left ${
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setActiveGroup('chay_chaupal');
+            }
+          }}
+          className={`flex items-center justify-between p-3 sm:p-4 rounded-btn transition-all text-left cursor-pointer select-none ${
             activeGroup === 'chay_chaupal'
               ? 'bg-coffee text-cream shadow-warm-md scale-[1.01]'
               : 'bg-cream text-coffee hover:bg-warm-beige/60 border border-border-warm/60'
           }`}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div
               className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                 activeGroup === 'chay_chaupal' ? 'bg-cream/20 text-cream' : 'bg-warm-beige text-coffee'
@@ -434,10 +470,10 @@ export const PartnerIncomeScreen: React.FC = () => {
             >
               <Users className="w-5 h-5" />
             </div>
-            <div>
-              <div className="font-bold text-sm sm:text-base">Chay Chaupal</div>
+            <div className="min-w-0">
+              <div className="font-bold text-sm sm:text-base truncate">Chay Chaupal</div>
               <div
-                className={`text-xs ${
+                className={`text-xs truncate ${
                   activeGroup === 'chay_chaupal' ? 'text-cream/80' : 'text-caramel'
                 }`}
               >
@@ -445,21 +481,42 @@ export const PartnerIncomeScreen: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="text-right">
-            <div
-              className={`text-xs uppercase tracking-wider font-semibold ${
-                activeGroup === 'chay_chaupal' ? 'text-cream/70' : 'text-caramel'
+
+          <div className="flex items-center gap-2.5 sm:gap-3.5 flex-shrink-0">
+            <div className="text-right">
+              <div
+                className={`text-[10px] sm:text-xs uppercase tracking-wider font-semibold ${
+                  activeGroup === 'chay_chaupal' ? 'text-cream/70' : 'text-caramel'
+                }`}
+              >
+                Total Income
+              </div>
+              <div className={`text-sm sm:text-base font-bold ${
+                activeGroup === 'chay_chaupal' ? 'text-income-green-light' : 'text-income-green'
+              }`}>
+                {formatINR(allGroupTotals.chay_chaupal || summary.chay_chaupal.total)}
+              </div>
+            </div>
+
+            {/* Separate Add Income Button for Chay Chaupal */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenAdd('chay_chaupal');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-btn font-bold text-xs transition-all shadow-warm-xs flex-shrink-0 active:scale-95 ${
+                activeGroup === 'chay_chaupal'
+                  ? 'bg-cream text-coffee hover:bg-white'
+                  : 'bg-coffee text-cream hover:bg-coffee/90'
               }`}
+              title="Add Chay Chaupal Income"
             >
-              Total Income
-            </div>
-            <div className={`text-sm sm:text-base font-bold ${
-              activeGroup === 'chay_chaupal' ? 'text-income-green-light' : 'text-income-green'
-            }`}>
-              {formatINR(allGroupTotals.chay_chaupal || summary.chay_chaupal.total)}
-            </div>
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Income</span>
+            </button>
           </div>
-        </button>
+        </div>
       </div>
 
       {/* Active Section Overview & Partner Breakdown Cards */}
@@ -585,76 +642,6 @@ export const PartnerIncomeScreen: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Advance & Net Balance Tracker Banner */}
-        {totalIncome > 0 && (
-          <div className="p-3.5 bg-cream border border-border-warm rounded-card shadow-warm-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-base flex-shrink-0 ${
-                p1Diff !== 0
-                  ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30'
-                  : 'bg-income-green-50 text-income-green border border-income-green/20'
-              }`}>
-                {p1Diff !== 0 ? <ArrowRightLeft className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
-              </div>
-              <div>
-                <div className="text-xs sm:text-sm font-bold text-coffee">
-                  {p1Diff !== 0 ? (
-                    <>
-                      <span>{p1Diff > 0 ? partner1Name : partner2Name}</span> has taken{' '}
-                      <span className="text-amber-700 dark:text-amber-400 font-bold">
-                        {formatINR(Math.abs(p1Diff))} Advance / Extra
-                      </span>
-                    </>
-                  ) : (
-                    <span>All Settled — Both partners have taken equal 50% shares</span>
-                  )}
-                </div>
-                <div className="text-[11px] sm:text-xs text-caramel mt-0.5">
-                  {p1Diff !== 0 ? (
-                    <>
-                      {p1Diff > 0 ? partner1Name : partner2Name} owes{' '}
-                      <span className="font-semibold text-coffee">{p1Diff > 0 ? partner2Name : partner1Name}</span>{' '}
-                      {formatINR(Math.abs(p1Diff))} (to be adjusted in next income)
-                    </>
-                  ) : (
-                    <span>No advance or adjustment pending between {partner1Name} and {partner2Name}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="text-xs text-caramel font-medium sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-border-warm/60">
-              <div>Expected 50% Share: <span className="font-bold text-coffee">{formatINR(expectedEach)} each</span></div>
-              <div className="text-[11px] text-caramel/80">
-                {selectedMonthKey === 'ALL' ? 'Filtered: All Time' : `Filtered: ${selectedMonthData.monthName}`}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Action Bar (Clean Header + Add Button) */}
-      <div className="bg-cream border border-border-warm rounded-card p-3.5 shadow-warm-sm flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-warm-beige text-coffee flex items-center justify-center font-bold text-xs flex-shrink-0">
-            {groupItems.length}
-          </div>
-          <div>
-            <div className="text-sm font-bold text-coffee">{currentConfig.title} Income Records</div>
-            <div className="text-xs text-caramel">Total income received &amp; distributed in {selectedMonthData.monthName}</div>
-          </div>
-        </div>
-
-        {/* Add Income Button */}
-        <button
-          type="button"
-          onClick={handleOpenAdd}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-btn bg-coffee hover:bg-coffee/90 active:scale-95 text-cream font-semibold text-sm shadow-warm-sm transition-all flex-shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add {currentConfig.title} Income</span>
-        </button>
       </div>
 
       {/* Transaction Records List / Table */}
@@ -669,7 +656,7 @@ export const PartnerIncomeScreen: React.FC = () => {
           description={`Add the first income entry for ${currentConfig.title} in ${selectedMonthData.monthName}. It will automatically distribute 50-50 between ${partner1Name} and ${partner2Name}.`}
           actionText={`Add ${currentConfig.title} Income`}
           actionVariant="primary"
-          onAction={handleOpenAdd}
+          onAction={() => handleOpenAdd(activeGroup)}
         />
       ) : (
         <div className="space-y-4">
@@ -678,33 +665,21 @@ export const PartnerIncomeScreen: React.FC = () => {
               key={mGroup.monthKey}
               className="bg-cream border border-border-warm rounded-card shadow-warm-sm overflow-hidden"
             >
-              {/* Month Group Header with Month Subtotal & Partner Split */}
-              <div className="px-4 py-3 bg-warm-beige/50 border-b border-border-warm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              {/* Month Group Header */}
+              <div className="px-4 py-2.5 bg-warm-beige/35 border-b border-border-warm flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-coffee/10 text-coffee flex items-center justify-center">
-                    <Calendar className="w-4 h-4 text-coffee" />
+                  <div className="w-6 h-6 rounded-md bg-coffee/10 text-coffee flex items-center justify-center">
+                    <Calendar className="w-3.5 h-3.5 text-coffee" />
                   </div>
-                  <div>
-                    <span className="font-bold text-sm text-coffee">{mGroup.monthName}</span>
-                    <span className="text-xs text-caramel ml-2">
-                      ({mGroup.items.length} {mGroup.items.length === 1 ? 'record' : 'records'})
-                    </span>
-                  </div>
+                  <span className="font-bold text-xs sm:text-sm text-coffee">{mGroup.monthName}</span>
+                  <span className="text-[11px] text-caramel">
+                    ({mGroup.items.length} {mGroup.items.length === 1 ? 'record' : 'records'})
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-2 sm:gap-3 text-xs flex-wrap justify-between sm:justify-end">
-                  <span className="text-caramel font-medium">
-                    {partner1Name}: <strong className="text-coffee">{formatINR(mGroup.partner1Total)}</strong>
-                  </span>
-                  <span className="text-caramel/40 hidden sm:inline">•</span>
-                  <span className="text-caramel font-medium">
-                    {partner2Name}: <strong className="text-coffee">{formatINR(mGroup.partner2Total)}</strong>
-                  </span>
-                  <span className="text-caramel/40 hidden sm:inline">•</span>
-                  <span className="inline-flex items-center gap-1 font-bold text-income-green text-xs sm:text-sm px-2.5 py-0.5 rounded-full bg-income-green-50 dark:bg-income-green-50/20 border border-income-green/30">
-                    Month Total: {formatINR(mGroup.total)}
-                  </span>
-                </div>
+                <span className="text-xs font-bold text-income-green px-2.5 py-0.5 rounded-full bg-income-green-50 dark:bg-income-green-50/20 border border-income-green/30">
+                  Month Total: {formatINR(mGroup.total)}
+                </span>
               </div>
 
               {/* Transactions in this month */}
