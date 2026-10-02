@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   Sun,
   Moon,
+  HandCoins,
 } from 'lucide-react';
 import { MonthSelector } from '../ui/MonthSelector';
 import { useApp } from '../../context/AppContext';
@@ -27,6 +28,8 @@ export const AppHeader: React.FC = () => {
     switch (currentTab) {
       case 'dashboard':
         return { title: 'Dashboard', subtitle: 'Overview & Summary', icon: LayoutDashboard };
+      case 'partner_income':
+        return { title: 'Partner Income', subtitle: 'Daal Roti & Chay Chaupal', icon: HandCoins };
       case 'staff':
         return { title: 'Staff Kharch', subtitle: 'Salaries & Allowances', icon: UsersRound };
       case 'emi':

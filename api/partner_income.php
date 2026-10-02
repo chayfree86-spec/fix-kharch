@@ -42,15 +42,24 @@ function partner_income_row(PDO $pdo, int $userId, int $id): ?array
     ];
 }
 
-// GET ?month=YYYY-MM[&group=daal_roti|chay_chaupal]
+// GET ?month=YYYY-MM|ALL[&group=daal_roti|chay_chaupal]
 if ($method === 'GET') {
-    $month = require_month_key($_GET['month'] ?? '');
+    $rawMonth = trim((string) ($_GET['month'] ?? ''));
     $group = str_or_null($_GET['group'] ?? null);
 
-    $sql = 'SELECT id, month_key, partner_group, total_amount, income_date, payment_mode, remarks,
-                   partner1_name, partner1_amount, partner2_name, partner2_amount, created_at
-            FROM partner_incomes WHERE user_id = ? AND month_key = ?';
-    $params = [$userId, $month];
+    if ($rawMonth === 'ALL' || $rawMonth === '') {
+        $month = 'ALL';
+        $sql = 'SELECT id, month_key, partner_group, total_amount, income_date, payment_mode, remarks,
+                       partner1_name, partner1_amount, partner2_name, partner2_amount, created_at
+                FROM partner_incomes WHERE user_id = ?';
+        $params = [$userId];
+    } else {
+        $month = require_month_key($rawMonth);
+        $sql = 'SELECT id, month_key, partner_group, total_amount, income_date, payment_mode, remarks,
+                       partner1_name, partner1_amount, partner2_name, partner2_amount, created_at
+                FROM partner_incomes WHERE user_id = ? AND month_key = ?';
+        $params = [$userId, $month];
+    }
 
     if ($group !== null && in_array($group, VALID_GROUPS, true)) {
         $sql .= ' AND partner_group = ?';
@@ -115,7 +124,6 @@ if ($method === 'GET') {
 
 if ($method === 'POST') {
     $input = json_input();
-    $month = require_month_key($input['month'] ?? '');
     $group = trim((string) ($input['partnerGroup'] ?? ''));
     if (!in_array($group, VALID_GROUPS, true)) {
         respond(['ok' => false, 'message' => 'Invalid partner group. Must be daal_roti or chay_chaupal.'], 422);
@@ -129,6 +137,13 @@ if ($method === 'POST') {
     $incomeDate = trim((string) ($input['incomeDate'] ?? ''));
     if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $incomeDate)) {
         $incomeDate = date('Y-m-d');
+    }
+
+    $rawMonth = trim((string) ($input['month'] ?? ''));
+    if ($rawMonth === 'ALL' || $rawMonth === '') {
+        $month = substr($incomeDate, 0, 7);
+    } else {
+        $month = require_month_key($rawMonth);
     }
 
     $paymentMode = trim((string) ($input['paymentMode'] ?? 'Cash'));
@@ -183,6 +198,8 @@ if ($method === 'PUT') {
         if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
             $fields[] = 'income_date = ?';
             $values[] = $date;
+            $fields[] = 'month_key = ?';
+            $values[] = substr($date, 0, 7);
         }
     }
     if (array_key_exists('paymentMode', $input)) {

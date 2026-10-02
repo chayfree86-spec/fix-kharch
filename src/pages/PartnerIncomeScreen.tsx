@@ -19,12 +19,13 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PartnerGroup, PartnerIncomeItem, PartnerIncomeSummary, PaymentMode } from '../types';
-import { api } from '../api/client';
+import { api, clearStalePartnerLocalData } from '../api/client';
 import { formatINR } from '../utils/currency';
 import { Modal } from '../components/ui/Modal';
 import { CurrencyInput } from '../components/ui/CurrencyInput';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { EmptyState } from '../components/ui/EmptyState';
+import { getMonthName } from '../data/mockData';
 import { CustomSelect, Option } from '../components/ui/CustomSelect';
 import { CustomDatePicker } from '../components/ui/CustomDatePicker';
 
@@ -54,19 +55,17 @@ const PAYMENT_MODES: { value: PaymentMode; label: string; icon: React.ElementTyp
 ];
 
 export const PartnerIncomeScreen: React.FC = () => {
-  const { selectedMonthKey, selectedMonthData, setMonth } = useApp();
+  const { selectedMonthKey, selectedMonthData } = useApp();
 
   // Active section tab: 'daal_roti' or 'chay_chaupal'
   const [activeGroup, setActiveGroup] = useState<PartnerGroup>('daal_roti');
 
-  // Default to 'ALL' (All Months) when entering Partner Income page
+  // Purge any stale/mock partner income data from earlier local testing
   useEffect(() => {
-    if (selectedMonthKey !== 'ALL') {
-      setMonth('ALL');
-    }
+    clearStalePartnerLocalData();
   }, []);
 
-  // Server state
+  // Server state — purely driven by backend MySQL API
   const [items, setItems] = useState<PartnerIncomeItem[]>([]);
   const [summary, setSummary] = useState<PartnerIncomeSummary>({
     daal_roti: { total: 0, partners: { 'Vijender Prajapati': 0, 'Chay Chaupal': 0 } },
@@ -93,25 +92,26 @@ export const PartnerIncomeScreen: React.FC = () => {
   const [deletingDetails, setDeletingDetails] = useState<{ amount: number; group: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Load data whenever month changes
-  const loadData = useCallback(async () => {
+  // Load data whenever month changes — purely from backend API
+  const loadData = useCallback(async (overrideMonth?: string) => {
+    const m = overrideMonth ?? selectedMonthKey ?? 'ALL';
     setLoading(true);
     try {
-      const res = await api.listPartnerIncome(selectedMonthKey);
+      const res = await api.listPartnerIncome(m);
       setItems(res.items || []);
       if (res.summary) {
         setSummary(res.summary);
       }
     } catch (err) {
-      console.error('Failed to load partner income:', err);
+      console.error('Failed to load partner income from API:', err);
     } finally {
       setLoading(false);
     }
   }, [selectedMonthKey]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadData(selectedMonthKey || 'ALL');
+  }, [selectedMonthKey, loadData]);
 
   // Current section configuration
   const currentConfig = PARTNER_CONFIG[activeGroup];
@@ -123,15 +123,68 @@ export const PartnerIncomeScreen: React.FC = () => {
     return items.filter(item => item.partnerGroup === activeGroup);
   }, [items, activeGroup]);
 
-  // Active section summary & Advance calculations
-  const currentGroupSummary = summary[activeGroup] || {
-    total: 0,
-    partners: {},
-  };
+  // Group transactions month-wise with subtotals per month
+  const groupedByMonth = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        monthKey: string;
+        monthName: string;
+        total: number;
+        partner1Total: number;
+        partner2Total: number;
+        items: PartnerIncomeItem[];
+      }
+    >();
 
-  const p1Total = currentGroupSummary.partners[partner1Name] || 0;
-  const p2Total = currentGroupSummary.partners[partner2Name] || 0;
-  const totalIncome = currentGroupSummary.total;
+    for (const item of groupItems) {
+      const mKey = item.monthKey || (item.incomeDate ? item.incomeDate.substring(0, 7) : 'Unknown');
+      if (!map.has(mKey)) {
+        map.set(mKey, {
+          monthKey: mKey,
+          monthName: getMonthName(mKey),
+          total: 0,
+          partner1Total: 0,
+          partner2Total: 0,
+          items: [],
+        });
+      }
+      const g = map.get(mKey)!;
+      g.total += item.totalAmount;
+      g.partner1Total += item.partner1Amount;
+      g.partner2Total += item.partner2Amount;
+      g.items.push(item);
+    }
+
+    return Array.from(map.values()).sort((a, b) => b.monthKey.localeCompare(a.monthKey));
+  }, [groupItems]);
+
+  // Active section summary & Advance calculations
+  const groupTotals = useMemo(() => {
+    let total = 0;
+    let p1 = 0;
+    let p2 = 0;
+    for (const item of groupItems) {
+      total += item.totalAmount;
+      p1 += item.partner1Amount;
+      p2 += item.partner2Amount;
+    }
+    return { total, p1, p2 };
+  }, [groupItems]);
+
+  const allGroupTotals = useMemo(() => {
+    let dr = 0;
+    let cc = 0;
+    for (const item of items) {
+      if (item.partnerGroup === 'daal_roti') dr += item.totalAmount;
+      else if (item.partnerGroup === 'chay_chaupal') cc += item.totalAmount;
+    }
+    return { daal_roti: dr, chay_chaupal: cc };
+  }, [items]);
+
+  const totalIncome = groupItems.length > 0 ? groupTotals.total : (summary[activeGroup]?.total || 0);
+  const p1Total = groupItems.length > 0 ? groupTotals.p1 : (summary[activeGroup]?.partners[partner1Name] || 0);
+  const p2Total = groupItems.length > 0 ? groupTotals.p2 : (summary[activeGroup]?.partners[partner2Name] || 0);
   const expectedEach = Math.round(totalIncome / 2);
   const p1Diff = p1Total - expectedEach; // > 0 means took advance/extra
   const p2Diff = p2Total - expectedEach; // > 0 means took advance/extra
@@ -220,10 +273,14 @@ export const PartnerIncomeScreen: React.FC = () => {
     setIsSaving(true);
     setFormError('');
     try {
+      const entryMonth = formDate
+        ? formDate.substring(0, 7)
+        : (selectedMonthKey !== 'ALL' ? selectedMonthKey : new Date().toISOString().substring(0, 7));
+
       if (editingItem) {
         await api.updatePartnerIncome({
           id: editingItem.id,
-          month: selectedMonthKey,
+          month: entryMonth,
           partnerGroup: activeGroup,
           totalAmount: formTotalAmount,
           incomeDate: formDate,
@@ -236,7 +293,7 @@ export const PartnerIncomeScreen: React.FC = () => {
         });
       } else {
         await api.addPartnerIncome({
-          month: selectedMonthKey,
+          month: entryMonth,
           partnerGroup: activeGroup,
           totalAmount: formTotalAmount,
           incomeDate: formDate,
@@ -262,7 +319,7 @@ export const PartnerIncomeScreen: React.FC = () => {
     if (!deletingId) return;
     setIsDeleting(true);
     try {
-      await api.deletePartnerIncome(deletingId, selectedMonthKey);
+      await api.deletePartnerIncome(deletingId);
       setDeletingId(null);
       setDeletingDetails(null);
       await loadData();
@@ -354,7 +411,7 @@ export const PartnerIncomeScreen: React.FC = () => {
             <div className={`text-sm sm:text-base font-bold ${
               activeGroup === 'daal_roti' ? 'text-income-green-light' : 'text-income-green'
             }`}>
-              {formatINR(summary.daal_roti.total)}
+              {formatINR(allGroupTotals.daal_roti || summary.daal_roti.total)}
             </div>
           </div>
         </button>
@@ -399,7 +456,7 @@ export const PartnerIncomeScreen: React.FC = () => {
             <div className={`text-sm sm:text-base font-bold ${
               activeGroup === 'chay_chaupal' ? 'text-income-green-light' : 'text-income-green'
             }`}>
-              {formatINR(summary.chay_chaupal.total)}
+              {formatINR(allGroupTotals.chay_chaupal || summary.chay_chaupal.total)}
             </div>
           </div>
         </button>
@@ -615,96 +672,124 @@ export const PartnerIncomeScreen: React.FC = () => {
           onAction={handleOpenAdd}
         />
       ) : (
-        <div className="bg-cream border border-border-warm rounded-card shadow-warm-sm overflow-hidden">
-          <div className="px-4 py-3 border-b border-border-warm flex items-center justify-between">
-            <div className="text-xs font-bold uppercase tracking-wider text-caramel">
-              {currentConfig.title} Transactions ({groupItems.length})
-            </div>
-            <div className="text-xs text-caramel font-medium">
-              50-50 Partner Distribution
-            </div>
-          </div>
-
-          <div className="divide-y divide-border-warm/60">
-            {groupItems.map(item => {
-              const ModeIcon =
-                PAYMENT_MODES.find(m => m.value === item.paymentMode)?.icon || CreditCard;
-
-              return (
-                <div
-                  key={item.id}
-                  className="p-3.5 sm:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-warm-beige/20 transition-colors"
-                >
-                  {/* Left Column: Icon & Basic Info */}
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-income-green-50 dark:bg-income-green-50/20 text-income-green flex items-center justify-center flex-shrink-0 mt-0.5 border border-income-green/20">
-                      <ReceiptText className="w-5 h-5 text-income-green" />
-                    </div>
-
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-base text-income-green">
-                          +{formatINR(item.totalAmount)}
-                        </span>
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-warm-beige/70 text-coffee/90 flex items-center gap-1">
-                          <ModeIcon className="w-3 h-3 text-caramel" />
-                          {item.paymentMode}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-3 text-xs text-caramel mt-1">
-                        <span className="flex items-center gap-1 font-medium">
-                          <Calendar className="w-3.5 h-3.5 text-caramel" />
-                          {formatDateDisplay(item.incomeDate)}
-                        </span>
-                        {item.remarks && (
-                          <span className="truncate max-w-[200px] sm:max-w-md text-coffee/70">
-                            • {item.remarks}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+        <div className="space-y-4">
+          {groupedByMonth.map(mGroup => (
+            <div
+              key={mGroup.monthKey}
+              className="bg-cream border border-border-warm rounded-card shadow-warm-sm overflow-hidden"
+            >
+              {/* Month Group Header with Month Subtotal & Partner Split */}
+              <div className="px-4 py-3 bg-warm-beige/50 border-b border-border-warm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-coffee/10 text-coffee flex items-center justify-center">
+                    <Calendar className="w-4 h-4 text-coffee" />
                   </div>
-
-                  {/* Middle Column: Partner Distribution Split */}
-                  <div className="flex items-center gap-2 py-2 px-3 bg-warm-beige/40 rounded-btn border border-border-warm/50 text-xs self-stretch md:self-auto justify-between md:justify-start">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-medium text-caramel">{item.partner1Name}:</span>
-                      <span className="font-bold text-income-green">{formatINR(item.partner1Amount)}</span>
-                    </div>
-                    <span className="text-caramel/40">|</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-medium text-caramel">{item.partner2Name}:</span>
-                      <span className="font-bold text-income-green">{formatINR(item.partner2Amount)}</span>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Actions */}
-                  <div className="flex items-center justify-end gap-1">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEdit(item)}
-                      className="w-8 h-8 rounded-btn flex items-center justify-center text-caramel hover:text-coffee hover:bg-warm-beige/60 transition-colors"
-                      aria-label="Edit"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDeletingId(item.id);
-                        setDeletingDetails({ amount: item.totalAmount, group: currentConfig.title });
-                      }}
-                      className="w-8 h-8 rounded-btn flex items-center justify-center text-caramel hover:text-expense-red hover:bg-expense-red/10 transition-colors"
-                      aria-label="Delete"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  <div>
+                    <span className="font-bold text-sm text-coffee">{mGroup.monthName}</span>
+                    <span className="text-xs text-caramel ml-2">
+                      ({mGroup.items.length} {mGroup.items.length === 1 ? 'record' : 'records'})
+                    </span>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+
+                <div className="flex items-center gap-2 sm:gap-3 text-xs flex-wrap justify-between sm:justify-end">
+                  <span className="text-caramel font-medium">
+                    {partner1Name}: <strong className="text-coffee">{formatINR(mGroup.partner1Total)}</strong>
+                  </span>
+                  <span className="text-caramel/40 hidden sm:inline">•</span>
+                  <span className="text-caramel font-medium">
+                    {partner2Name}: <strong className="text-coffee">{formatINR(mGroup.partner2Total)}</strong>
+                  </span>
+                  <span className="text-caramel/40 hidden sm:inline">•</span>
+                  <span className="inline-flex items-center gap-1 font-bold text-income-green text-xs sm:text-sm px-2.5 py-0.5 rounded-full bg-income-green-50 dark:bg-income-green-50/20 border border-income-green/30">
+                    Month Total: {formatINR(mGroup.total)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Transactions in this month */}
+              <div className="divide-y divide-border-warm/60">
+                {mGroup.items.map(item => {
+                  const ModeIcon =
+                    PAYMENT_MODES.find(m => m.value === item.paymentMode)?.icon || CreditCard;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="p-3.5 sm:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-warm-beige/20 transition-colors"
+                    >
+                      {/* Left Column: Icon & Basic Info */}
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-income-green-50 dark:bg-income-green-50/20 text-income-green flex items-center justify-center flex-shrink-0 mt-0.5 border border-income-green/20">
+                          <ReceiptText className="w-5 h-5 text-income-green" />
+                        </div>
+
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-base text-income-green">
+                              +{formatINR(item.totalAmount)}
+                            </span>
+                            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-warm-beige/70 text-coffee/90 flex items-center gap-1">
+                              <ModeIcon className="w-3 h-3 text-caramel" />
+                              {item.paymentMode}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-3 text-xs text-caramel mt-1">
+                            <span className="flex items-center gap-1 font-medium">
+                              <Calendar className="w-3.5 h-3.5 text-caramel" />
+                              {formatDateDisplay(item.incomeDate)}
+                            </span>
+                            {item.remarks && (
+                              <span className="truncate max-w-[200px] sm:max-w-md text-coffee/70">
+                                • {item.remarks}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Middle Column: Partner Distribution Split */}
+                      <div className="flex items-center gap-2 py-2 px-3 bg-warm-beige/40 rounded-btn border border-border-warm/50 text-xs self-stretch md:self-auto justify-between md:justify-start">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium text-caramel">{item.partner1Name}:</span>
+                          <span className="font-bold text-income-green">{formatINR(item.partner1Amount)}</span>
+                        </div>
+                        <span className="text-caramel/40">|</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium text-caramel">{item.partner2Name}:</span>
+                          <span className="font-bold text-income-green">{formatINR(item.partner2Amount)}</span>
+                        </div>
+                      </div>
+
+                      {/* Right Column: Actions */}
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(item)}
+                          className="w-8 h-8 rounded-btn flex items-center justify-center text-caramel hover:text-coffee hover:bg-warm-beige/60 transition-colors"
+                          aria-label="Edit"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeletingId(item.id);
+                            setDeletingDetails({ amount: item.totalAmount, group: currentConfig.title });
+                          }}
+                          className="w-8 h-8 rounded-btn flex items-center justify-center text-caramel hover:text-expense-red hover:bg-expense-red/10 transition-colors"
+                          aria-label="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

@@ -177,7 +177,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [monthLoading, setMonthLoading] = useState(false);
   const [staffError, setStaffError] = useState<string | null>(null);
 
-  const [selectedMonthKey, setSelectedMonthKey] = useState<string>(() => {
+  const initialExpenseMonth = (() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_MONTH);
       if (saved && /^\d{4}-\d{2}$/.test(saved)) return saved;
@@ -185,7 +185,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       /* ignore */
     }
     return getCurrentMonthKey();
-  });
+  })();
+
+  const lastExpenseMonthKey = useRef<string>(initialExpenseMonth);
+  const [selectedMonthKey, setSelectedMonthKey] = useState<string>(initialExpenseMonth);
 
   // Refs so async callbacks read the latest state without re-subscribing.
   const monthsDataRef = useRef(monthsData);
@@ -197,7 +200,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Persist the selected month (convenience only, not sensitive).
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY_MONTH, selectedMonthKey);
+      if (selectedMonthKey && selectedMonthKey !== 'ALL') {
+        localStorage.setItem(STORAGE_KEY_MONTH, selectedMonthKey);
+      }
     } catch {
       /* ignore */
     }
@@ -370,8 +375,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     monthsData[selectedMonthKey] || createEmptyMonth(selectedMonthKey, settings.defaultMonthlyBudget);
   const summary = calculateMonthSummary(selectedMonthData, categories);
 
+  // ---- Tab navigation ----
+  const handleSetCurrentTab = useCallback((tab: TabType) => {
+    setCurrentTab(tab);
+    if (tab === 'partner_income') {
+      setSelectedMonthKey('ALL');
+    } else {
+      setSelectedMonthKey(prev => (prev === 'ALL' ? (lastExpenseMonthKey.current || getCurrentMonthKey()) : prev));
+    }
+  }, []);
+
   // ---- Month navigation ----
-  const setMonth = (monthKey: string) => setSelectedMonthKey(monthKey);
+  const setMonth = (monthKey: string) => {
+    if (monthKey && monthKey !== 'ALL') {
+      lastExpenseMonthKey.current = monthKey;
+    }
+    setSelectedMonthKey(monthKey);
+  };
   const nextMonth = () => setSelectedMonthKey(addMonthsToKey(selectedMonthKey, 1));
   const prevMonth = () => setSelectedMonthKey(addMonthsToKey(selectedMonthKey, -1));
 
@@ -542,7 +562,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         register,
         logout,
         currentTab,
-        setCurrentTab,
+        setCurrentTab: handleSetCurrentTab,
         selectedMonthKey,
         selectedMonthData,
         availableMonthKeys,
