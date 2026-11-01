@@ -21,13 +21,6 @@ export const StaffScreen: React.FC = () => {
 
   const desktopInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const mobileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const typingTimerRef = useRef<any>(null);
-
-  React.useEffect(() => {
-    return () => {
-      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
-    };
-  }, []);
 
   const filteredStaff = useMemo(() => {
     if (!searchQuery.trim()) return selectedMonthData.staffList;
@@ -52,30 +45,10 @@ export const StaffScreen: React.FC = () => {
     [filteredStaff]
   );
 
-  const handleInlineAmountChange = (
-    staffId: string,
-    rawVal: string,
-    index: number,
-    isDesktop: boolean
-  ) => {
+  const handleInlineAmountChange = (staffId: string, rawVal: string) => {
     const clean = rawVal.replace(/[^0-9]/g, '');
     const num = clean === '' ? 0 : parseInt(clean, 10);
     updateStaff(staffId, { amount: num });
-
-    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
-
-    if (clean.length > 0) {
-      typingTimerRef.current = setTimeout(() => {
-        const refList = isDesktop ? desktopInputRefs.current : mobileInputRefs.current;
-        const currentInput = refList[index];
-        const nextInput = refList[index + 1];
-        if (document.activeElement === currentInput && nextInput) {
-          nextInput.focus();
-          nextInput.select();
-          nextInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-      }, 800);
-    }
   };
 
   const handleKeyNav = (
@@ -85,7 +58,6 @@ export const StaffScreen: React.FC = () => {
   ) => {
     if (e.key === 'Enter' || e.key === 'ArrowDown') {
       e.preventDefault();
-      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
       const next = refList[index + 1];
       if (next) {
         next.focus();
@@ -94,7 +66,6 @@ export const StaffScreen: React.FC = () => {
       }
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
       const prev = refList[index - 1];
       if (prev) {
         prev.focus();
@@ -270,7 +241,7 @@ export const StaffScreen: React.FC = () => {
                           value={staff.amount === 0 ? '' : staff.amount}
                           placeholder="0"
                           onFocus={e => e.target.select()}
-                          onChange={e => handleInlineAmountChange(staff.id, e.target.value, idx, false)}
+                          onChange={e => handleInlineAmountChange(staff.id, e.target.value)}
                           onKeyDown={e => handleKeyNav(e, idx, mobileInputRefs.current)}
                           className="w-full h-8 pl-5 pr-2 bg-transparent text-base font-bold text-expense-red focus:outline-none"
                         />
@@ -369,7 +340,7 @@ export const StaffScreen: React.FC = () => {
                             value={staff.amount === 0 ? '' : staff.amount}
                             placeholder="0"
                             onFocus={e => e.target.select()}
-                            onChange={e => handleInlineAmountChange(staff.id, e.target.value, idx, true)}
+                            onChange={e => handleInlineAmountChange(staff.id, e.target.value)}
                             onKeyDown={e => handleKeyNav(e, idx, desktopInputRefs.current)}
                             className="w-full h-10 pl-7 pr-3 bg-white border border-border-warm rounded-btn text-sm font-bold text-expense-red text-right placeholder:text-coffee/30 focus:outline-none focus:ring-2 focus:ring-expense-red/20 focus:border-expense-red shadow-sm transition-all"
                           />
